@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customSettingsType>Hierarchy</customSettingsType>
+    <description>Controls when and how certain notes are converted to enhanced notes.</description>
+    <enableFeeds>false</enableFeeds>
+    <fields>
+        <fullName>Convert_in_Near_Real_Time__c</fullName>
+        <defaultValue>false</defaultValue>
+        <description>Enables &apos;after insert&apos; trigger on Note that enqueues job to convert into ContentNotes in near real-time. This async conversion does not slow down save transaction, and if &apos;Delete Notes&apos; option is enabled then deletes in separate transaction too.</description>
+        <externalId>false</externalId>
+        <inlineHelpText>Enables &apos;after insert&apos; trigger on Note that enqueues job to convert into ContentNotes in near real-time. This async conversion does not slow down save transaction, and if &apos;Delete Notes&apos; option is enabled then deletes in separate transaction too.</inlineHelpText>
+        <label>Convert in Near Real Time?</label>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>Delete_Note_Once_Converted__c</fullName>
+        <defaultValue>false</defaultValue>
+        <description>When checked then conversion process will delete the original Note once successfully converted to ContentNote. You may want to delete them to save storage space in your org.</description>
+        <externalId>false</externalId>
+        <inlineHelpText>When checked then conversion process will delete the original Note once successfully converted to ContentNote. You may want to delete them to save storage space in your org.</inlineHelpText>
+        <label>Delete Note Once Converted?</label>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>Share_Private_Notes__c</fullName>
+        <defaultValue>false</defaultValue>
+        <description>Notes have &apos;IsPrivate&apos; field that limits access to owner and admins. ContentNotes related to records are not private. Enable this option to share converted private notes with their parent record and to anyone who has access to the parent record.</description>
+        <externalId>false</externalId>
+        <inlineHelpText>Notes have &apos;IsPrivate&apos; field that limits access to owner and admins. ContentNotes related to records are not private. Enable this option to share converted private notes with their parent record and to anyone who has access to the parent record.</inlineHelpText>
+        <label>Share Private Notes?</label>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>Share_Type__c</fullName>
+        <defaultValue>&quot;V&quot;</defaultValue>
+        <description>The ContentDocumentLink.ShareType value to use for converted files.
+V = view only
+I = inferred by user&apos;s editability of related record
+C = collaborator, view/edit (not supported if related to standard objects)</description>
+        <externalId>false</externalId>
+        <inlineHelpText>The ContentDocumentLink.ShareType value to use for converted files.
+V = view only
+I = inferred by user&apos;s editability of related record
+C = collaborator, view/edit (not supported if related to standard objects)</inlineHelpText>
+        <label>Share Type</label>
+        <length>255</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Visibility__c</fullName>
+        <defaultValue>&quot;InternalUsers&quot;</defaultValue>
+        <description>The ContentDocumentLink.Visibility value to use for converted files. For any user with permission to view the file, this further controls which set of users can actually see it.
+&quot;InternalUsers&quot; = only internal users with permission to view file
+&quot;AllUsers&quot; = all users, including community users, with permission to view file</description>
+        <externalId>false</externalId>
+        <inlineHelpText>The ContentDocumentLink.Visibility value to use for converted files.
+&quot;InternalUsers&quot; = only internal users with permission to view file
+&quot;AllUsers&quot; = all users, including community users, with permission to view file</inlineHelpText>
+        <label>Visibility</label>
+        <length>255</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <label>Convert Notes to ContentNotes Settings</label>
+    <visibility>Public</visibility>
+</CustomObject>

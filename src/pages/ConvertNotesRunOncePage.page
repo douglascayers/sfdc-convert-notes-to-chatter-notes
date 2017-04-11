@@ -1,0 +1,178 @@
+<apex:page controller="ConvertNotesRunOnceController" tabStyle="Convert_Notes_to_ContentNotes__tab">
+
+    <apex:slds />
+
+    <style>
+
+        .slds-scope .apexp .bPageBlock p {
+            margin-bottom: inherit; /* undo classic styling so slds is applied */
+        }
+
+    </style>
+
+    <apex:form >
+
+        <div class="slds-scope">
+
+            <div class="slds-m-around--large">
+
+                <div class="slds-page-header slds-box">
+                    <nav role="navigation" aria-label="Breadcrumbs">
+                        <ol class="slds-breadcrumb slds-list--horizontal">
+                            <li class="slds-breadcrumb__item slds-text-title--caps"><a href="{!URLFOR($Page.ConvertNotesMenuPage)}">Main Menu</a></li>
+                            <li class="slds-breadcrumb__item slds-text-title--caps"><a href="{!URLFOR($Page.ConvertNotesRunOncePage)}">Test Conversion</a></li>
+                        </ol>
+                    </nav>
+                    <p class="slds-page-header__title">
+                        Convert Notes to Enhanced Notes
+                    </p>
+                </div>
+
+                <div class="slds-m-around--large"/>
+
+                <div>
+                    <p>
+                        Configure and submit a one-time conversion job. You may test on a small set of records by specifying one or more note parent record ids, otherwise all notes will be converted.
+                    </p>
+                </div>
+
+                <div class="slds-m-around--large"/>
+
+                <apex:outputPanel id="mainPanel" layout="block">
+
+                    <apex:pageMessages />
+
+                    <apex:outputPanel rendered="{!NOT(ISBLANK(message))}">
+                        <div class="slds-m-bottom--small">
+                            <div id="messageContainer" class="slds-notify_container" style="position: relative;">
+                                <div class="slds-notify slds-notify--alert {!IF(success, 'slds-theme--success', 'slds-theme--error')} slds-theme--alert-texture" role="alert">
+                                    <button class="slds-button slds-notify__close slds-button--icon-inverse" title="Close" onclick="dismissMessages(0); return false;">
+                                        X
+                                        <span class="slds-assistive-text">Close</span>
+                                    </button>
+                                    <span class="slds-assistive-text">{!IF(success, 'Success', 'Error')}</span>
+                                    <h2>
+                                        <apex:outputText value="{!message}"/>
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+                    </apex:outputPanel>
+
+                    <apex:pageBlock mode="maindetail">
+
+                        <div class="slds-box slds-m-top--small slds-m-bottom--small">
+
+                            <apex:pageBlockSection columns="1">
+
+                                <apex:outputLabel value="Note Parent Record IDs (comma-separated)"
+                                                  style="font-weight: bold;"/>
+
+                                <apex:inputTextArea label=""
+                                                    value="{!parentIdsCsv}"
+                                                    style="width:90%"/>
+
+                            </apex:pageBlockSection>
+
+                        </div>
+
+                        <div class="slds-box slds-m-top--small slds-m-bottom--small">
+
+                            <apex:pageBlockSection columns="1">
+
+                                <apex:outputLabel value="Batch Size"
+                                                  style="font-weight: bold;"/>
+
+                                <apex:inputText label=""
+                                                value="{!batchSize}"/>
+
+                            </apex:pageBlockSection>
+
+                        </div>
+
+                    </apex:pageBlock>
+
+                    <div class="slds-grid slds-grid--align-center">
+                        <div slds="slds-col">
+                            <button class="slds-button slds-button--brand" onclick="showConfirmDialog(); return false;">Submit</button>
+                            <apex:commandButton value=" Cancel " action="{!URLFOR($Page.ConvertNotesMenuPage)}" styleClass="slds-button slds-button--neutral"/>
+                        </div>
+                    </div>
+
+                    <div id="submit-confirm-dialog" role="dialog" tabindex="-1" aria-labelledby="header43" class="slds-modal slds-fade-in-open slds-hide">
+                        <div class="slds-modal__container">
+                            <div class="slds-modal__header">
+                                <button class="slds-button slds-modal__close slds-button--icon-inverse" onclick="closeConfirmDialog(); return false;" title="Close">
+                                    X
+                                    <span class="slds-assistive-text">Close</span>
+                                </button>
+                                <h2 id="header43" class="slds-text-heading--medium">Confirm Job Submit</h2>
+                            </div>
+                            <div class="slds-modal__content slds-p-around--medium">
+                                <p>
+                                    Make sure you have carefully reviewed your <a href="{!URLFOR($Page.ConvertNotesSettingsPage)}">conversion and sharing settings</a>
+                                    and have made any necessary data backups.
+                                </p>
+                            </div>
+                            <div class="slds-modal__footer">
+                                <button class="slds-button slds-button--brand" onclick="submitJob(); return false;">Yes, I have</button>
+                                <button class="slds-button slds-button--neutral" onclick="closeConfirmDialog(); return false;">No, let me recheck</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="submit-confirm-dialog-backdrop" class="slds-backdrop slds-backdrop--open slds-hide"></div>
+
+                    <apex:actionFunction name="submitJob" action="{!submitJob}"/>
+
+                    <script>
+
+                        var timerId;
+
+                        function dismissMessages( waitTime ) {
+                            clearTimeout( timerId );
+                            timerId = setTimeout( function() {
+                                document.getElementById('messageContainer').className += ' slds-hide';
+                            }, waitTime );
+                        }
+
+                        function showConfirmDialog() {
+
+                            var domIds = [ 'submit-confirm-dialog', 'submit-confirm-dialog-backdrop' ];
+
+                            for ( var i = 0; i < domIds.length; i++ ) {
+
+                                var domElmt = document.getElementById( domIds[i] );
+
+                                var className = domElmt.className;
+
+                                domElmt.className = domElmt.className.replace(' slds-hide', '' );
+
+                            }
+
+                        }
+
+                        function closeConfirmDialog() {
+
+                            var domIds = [ 'submit-confirm-dialog', 'submit-confirm-dialog-backdrop' ];
+
+                            for ( var i = 0; i < domIds.length; i++ ) {
+
+                                var domElmt = document.getElementById( domIds[i] );
+
+                                domElmt.className += ' slds-hide';
+
+                            }
+
+                        }
+
+                    </script>
+
+                </apex:outputPanel>
+
+            </div>
+
+        </div>
+
+    </apex:form>
+
+</apex:page>

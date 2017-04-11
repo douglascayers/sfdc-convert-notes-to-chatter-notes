@@ -1,0 +1,114 @@
+<apex:page tabStyle="Convert_Notes_to_ContentNotes__tab">
+
+    <apex:slds />
+
+    <style>
+
+        .slds-scope .menu-grid .slds-box {
+            height: 100%;
+        }
+
+        .apexp .bPageBlock p {
+            margin-bottom: inherit; /* undo classic styling so slds is applied */
+        }
+
+    </style>
+
+    <div class="slds-scope">
+
+        <div class="slds-m-around--large">
+
+            <div class="slds-page-header slds-box">
+                <nav role="navigation" aria-label="Breadcrumbs">
+                    <ol class="slds-breadcrumb slds-list--horizontal">
+                        <li class="slds-breadcrumb__item slds-text-title--caps"><a href="{!URLFOR($Page.ConvertNotesMenuPage)}">Main Menu</a></li>
+                    </ol>
+                </nav>
+                <p class="slds-page-header__title">
+                    Convert Notes to Enhanced Notes
+                </p>
+            </div>
+
+            <div class="slds-m-around--large"/>
+
+            <div class="menu-grid slds-grid slds-grid--vertical-stretch slds-grid--pull-padded-medium">
+
+                <div class="slds-p-horizontal--medium slds-size--1-of-3">
+                    <a href="{!URLFOR($Page.ConvertNotesSettingsPage)}" style="text-decoration: none;">
+                        <div class="slds-box slds-theme--shade">
+                            <h3 class="slds-text-heading--small">1. Setup Conversion Settings</h3>
+                            <p class="slds-text-color--default">
+                                Customize sharing and conversion options.
+                            </p>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="menu-grid-col slds-p-horizontal--medium slds-size--1-of-3">
+                    <a href="{!URLFOR($Page.ConvertNotesRunOncePage)}" style="text-decoration: none;">
+                        <div class="slds-box slds-theme--shade">
+                            <h3 class="slds-text-heading--small">2. Test Conversion</h3>
+                            <p class="slds-text-color--default">
+                                Run a test conversion job limited to specific parent records.
+                            </p>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="menu-grid-col slds-p-horizontal--medium slds-size--1-of-3">
+                    <a href="{!URLFOR($Page.ConvertNotesSchedulePage)}" style="text-decoration: none;">
+                        <div class="slds-box slds-theme--shade">
+                            <h3 class="slds-text-heading--small">3. Automate Conversion</h3>
+                            <p class="slds-text-color--default">
+                                Choose how often to convert new notes to enhanced notes.
+                            </p>
+                        </div>
+                    </a>
+                </div>
+
+            </div>
+
+            <div class="slds-m-around--large"/>
+
+            <div class="menu-grid slds-grid slds-grid--vertical-stretch slds-grid--pull-padded-medium">
+
+                <div class="slds-p-horizontal--medium slds-size--1-of-3">
+                    <a href="{!URLFOR($Page.ConvertNotesFAQPage)}" style="text-decoration: none;">
+                        <div class="slds-box slds-theme--shade">
+                            <h3 class="slds-text-heading--small">Troubleshooting</h3>
+                            <p class="slds-text-color--default">
+                                Frequently Asked Questions
+                            </p>
+                        </div>
+                    </a>
+                </div>
+
+            </div>
+
+            <div class="slds-m-around--large"/>
+
+            <div class="slds-notify_container" style="position: relative;">
+                <div class="slds-notify slds-notify--toast slds-theme--warning" role="alert">
+                    <div class="slds-notify__content">
+                        <h2 class="slds-text-heading--small">
+                            Always test in a sandbox and backup your data first before performing conversions in production.
+                        </h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slds-m-around--large"/>
+
+            <div class="slds-panel slds-align--absolute-center">
+                <p>
+                    &copy; 2017 <a href="https://douglascayers.com" target="_blank">Douglas C. Ayers</a>.
+                    View project on <a href="https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes" target="_blank">GitHub</a>.
+                    Licensed under <a href="https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/blob/master/LICENSE" target="_blank">MIT License</a>.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+</apex:page>
