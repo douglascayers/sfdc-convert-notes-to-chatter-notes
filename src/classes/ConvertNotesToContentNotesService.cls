@@ -199,36 +199,35 @@ public with sharing class ConvertNotesToContentNotesService {
      */
     public Set<ID> filterAlreadyConvertedNoteIds( List<Note> notes ) {
 
+        Set<ID> filteredNoteIds = new Set<ID>();
+
         Set<ID> noteIds = new Set<ID>();
+        Set<ID> parentIds = new Set<ID>();
 
         for ( Note note : notes ) {
             noteIds.add( note.id );
+            parentIds.add( note.parentId );
         }
 
-        return filterAlreadyConvertedNoteIds( noteIds );
-    }
+        for ( List<ContentDocumentLink> links : [
+            SELECT
+                contentDocument.latestPublishedVersion.original_record_id__c
+            FROM
+                ContentDocumentLink
+            WHERE
+                linkedEntityId IN :parentIds
+                AND
+                contentDocument.latestPublishedVersion.original_record_id__c IN :noteIds
+        ]) {
 
-    /**
-     * Given a set of attachment ids then returns the sublist of those
-     * that have already been converted.
-     */
-    public Set<ID> filterAlreadyConvertedNoteIds( Set<ID> noteIds ) {
+            for ( ContentDocumentLink link : links ) {
 
-        Set<ID> filteredNoteIds = new Set<ID>();
+                if ( link.contentDocument != null && link.contentDocument.latestPublishedVersion != null ) {
 
-        if ( noteIds != null && noteIds.size() > 0 ) {
+                    if ( noteIds.contains( link.contentDocument.latestPublishedVersion.original_record_id__c ) ) {
+                        filteredNoteIds.add( link.contentDocument.latestPublishedVersion.original_record_id__c );
+                    }
 
-            for ( List<ContentVersion> versions : [
-                SELECT
-                    original_record_id__c
-                FROM
-                    ContentVersion
-                WHERE
-                    original_record_id__c IN :noteIds
-            ]) {
-
-                for ( ContentVersion cv : versions ) {
-                    filteredNoteIds.add( cv.original_record_id__c );
                 }
 
             }

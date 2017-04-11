@@ -91,7 +91,13 @@ private class ConvertNotesToContentNotesServiceTest {
 
             System.runAs( user2 ) {
 
-                List<Note> notes = [ SELECT id FROM Note ];
+                List<Note> notes = [
+                    SELECT
+                        id, parentId, ownerId, title, body, isPrivate,
+                        createdById, createdDate, lastModifiedById, lastModifiedDate
+                    FROM
+                        Note
+                ];
 
                 ConvertNotesToContentNotesService service = new ConvertNotesToContentNotesService();
 
@@ -199,6 +205,16 @@ private class ConvertNotesToContentNotesServiceTest {
 
         insert notes;
 
+        notes = [
+            SELECT
+                id, parentId, ownerId, title, body, isPrivate,
+                createdById, createdDate, lastModifiedById, lastModifiedDate
+            FROM
+                Note
+            WHERE
+                id = :notes
+        ];
+
         Test.startTest();
 
         List<ConvertNotesToContentNotesService.ConversionResult> results = null;
@@ -265,6 +281,16 @@ private class ConvertNotesToContentNotesServiceTest {
         );
 
         insert note;
+
+        note = [
+            SELECT
+                id, parentId, ownerId, title, body, isPrivate,
+                createdById, createdDate, lastModifiedById, lastModifiedDate
+            FROM
+                Note
+            WHERE
+                id = :note.id
+        ];
 
         Test.startTest();
 
@@ -338,6 +364,16 @@ private class ConvertNotesToContentNotesServiceTest {
         );
 
         insert note;
+
+        note = [
+            SELECT
+                id, parentId, ownerId, title, body, isPrivate,
+                createdById, createdDate, lastModifiedById, lastModifiedDate
+            FROM
+                Note
+            WHERE
+                id = :note.id
+        ];
 
         Test.startTest();
 
@@ -416,6 +452,16 @@ private class ConvertNotesToContentNotesServiceTest {
 
         insert note;
 
+        note = [
+            SELECT
+                id, parentId, ownerId, title, body, isPrivate,
+                createdById, createdDate, lastModifiedById, lastModifiedDate
+            FROM
+                Note
+            WHERE
+                id = :note.id
+        ];
+
         Test.startTest();
 
         ConvertNotesToContentNotesOptions options = new ConvertNotesToContentNotesOptions();
@@ -487,6 +533,16 @@ private class ConvertNotesToContentNotesServiceTest {
 
         insert note;
 
+        note = [
+            SELECT
+                id, parentId, ownerId, title, body, isPrivate,
+                createdById, createdDate, lastModifiedById, lastModifiedDate
+            FROM
+                Note
+            WHERE
+                id = :note.id
+        ];
+
         Test.startTest();
 
         ConvertNotesToContentNotesOptions options = new ConvertNotesToContentNotesOptions();
@@ -510,6 +566,100 @@ private class ConvertNotesToContentNotesServiceTest {
 
         ContentDocumentLink cdl = [ SELECT id, linkedEntityId FROM ContentDocumentLink WHERE contentDocumentId = :cv.contentDocumentId AND linkedEntityId = :account.id ];
         System.assert( cdl != null );
+
+    }
+
+    @isTest
+    static void test_no_duplicates() {
+
+        Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
+        settings.Share_Type__c = 'I';
+        settings.Visibility__c = 'AllUsers';
+        settings.Convert_in_Near_Real_Time__c = false;
+        settings.Delete_Note_Once_Converted__c = false;
+        settings.Share_Private_Notes__c = true;
+
+        upsert settings;
+
+        UserRole role = [ SELECT id FROM UserRole WHERE parentRoleId = null AND portalType = 'None' LIMIT 1 ];
+
+        Profile p = [ SELECT id FROM Profile WHERE name = 'Standard User' ];
+
+        User user1, user2;
+
+        // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_testing_tools_runas.htm
+        System.runAs( new User( id = UserInfo.getUserId() ) ) {
+
+            user1 = newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
+            user2 = newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
+
+            insert new List<User>{ user1, user2 };
+
+        }
+
+        Account account = new Account(
+            ownerId = user1.id,
+            name = 'Test Account'
+        );
+
+        insert account;
+
+        Note note = new Note(
+            title = 'Hello World.txt',
+            body = 'Goodnight Moon',
+            parentId = account.id,
+            ownerId = user1.id
+        );
+
+        System.runAs( user1 ) {
+
+            insert note;
+
+        }
+
+        note = [
+            SELECT
+                id, parentId, ownerId, title, body, isPrivate,
+                createdById, createdDate, lastModifiedById, lastModifiedDate
+            FROM
+                Note
+            WHERE
+                id = :note.id
+        ];
+
+        Test.startTest();
+
+        ConvertNotesToContentNotesOptions options = new ConvertNotesToContentNotesOptions();
+
+        ConvertNotesToContentNotesService service = new ConvertNotesToContentNotesService( options );
+
+        List<ConvertNotesToContentNotesService.ConversionResult> results = service.convert( new Note[]{ note } );
+
+        System.assertNotEquals( null, results );
+
+        for ( ConvertNotesToContentNotesService.ConversionResult result : results ) {
+            System.debug( result );
+            System.assertEquals( true, result.success, result.message );
+        }
+
+        ContentDocumentLink cdl = [ SELECT id, linkedEntityId, contentDocument.latestPublishedVersion.ownerId FROM ContentDocumentLink WHERE contentDocument.latestPublishedVersion.original_record_id__c = :note.id AND linkedEntityId = :account.id ];
+        System.assert( cdl != null );
+
+        // convert again, expect no duplicate file created
+
+        results = service.convert( new Note[]{ note } );
+
+        System.assertNotEquals( null, results );
+
+        for ( ConvertNotesToContentNotesService.ConversionResult result : results ) {
+            System.debug( result );
+            System.assertEquals( true, result.success, result.message );
+        }
+
+        System.assertEquals( 1, [ SELECT count() FROM ContentDocumentLink WHERE contentDocument.latestPublishedVersion.original_record_id__c = :note.id AND linkedEntityId = :account.id ] );
+        System.assertEquals( 1, [ SELECT count() FROM Note WHERE id = :note.id ] );
+
+        Test.stopTest();
 
     }
 
