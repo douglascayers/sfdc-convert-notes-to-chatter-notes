@@ -122,8 +122,8 @@
         <customTabListAdditionalFields>Detail__c</customTabListAdditionalFields>
         <customTabListAdditionalFields>Log_Time__c</customTabListAdditionalFields>
         <excludedStandardButtons>New</excludedStandardButtons>
-        <excludedStandardButtons>ChangeOwner</excludedStandardButtons>
         <excludedStandardButtons>Accept</excludedStandardButtons>
+        <excludedStandardButtons>ChangeOwner</excludedStandardButtons>
         <lookupDialogsAdditionalFields>Summary__c</lookupDialogsAdditionalFields>
         <lookupDialogsAdditionalFields>Detail__c</lookupDialogsAdditionalFields>
         <lookupDialogsAdditionalFields>Log_Time__c</lookupDialogsAdditionalFields>
