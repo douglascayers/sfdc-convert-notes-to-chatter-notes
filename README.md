@@ -38,6 +38,8 @@ Idea Exchange
 Pre-Requisites
 --------------
 
+* Summer '17 (API 40.0) or later
+
 * Enable [Create Audit Fields](https://help.salesforce.com/articleView?id=Enable-Create-Audit-Fields) so Note create/update/owner fields can be preserved on the new enhanced notes
 
 ![screen shot](images/setup-enable-create-audit-fields1.png)
