@@ -40,7 +40,7 @@ Pre-Requisites
 
 * Summer '17 (API 40.0) or later
 
-* Enable [Create Audit Fields](https://help.salesforce.com/articleView?id=000230837&type=1&language=en_US) so Note create/update/owner fields can be preserved on the new enhanced notes
+* Enable [Create Audit Fields](https://help.salesforce.com/articleView?id=000213290&type=1&language=en_US) so Note create/update/owner fields can be preserved on the new enhanced notes
 
 ![screen shot](images/setup-enable-create-audit-fields1.png)
 
@@ -66,7 +66,7 @@ You may install the unmanaged code from GitHub and make any desired adjustments.
 Getting Started
 ---------------
 
-1. Enable setting [Create Audit Fields](https://help.salesforce.com/articleView?id=000230837&type=1&language=en_US) so Note create/update/owner fields can be preserved on the new enhanced notes
+1. Enable setting [Create Audit Fields](https://help.salesforce.com/articleView?id=000213290&type=1&language=en_US) so Note create/update/owner fields can be preserved on the new enhanced notes
 2. Enable setting [New Notes](https://help.salesforce.com/articleView?id=notes_admin_setup.htm) so ContentNote object exists and the new note-taking tool is available
 3. Add "Notes" related list to your page layouts (e.g. Accounts, Contacts, Tasks, Events, etc.)
 4. Deploy the package using one of the installation links above
@@ -96,7 +96,7 @@ Field is not writeable: ContentVersion.CreatedById
 When you deploy the package you might get error that files are invalid and need recompilation and one of the specific messages
 might say "Field is not writeable: ContentVersion.CreatedById". The conversion tool tries to copy the notes's original
 created and last modified date/user to the converted enhanced note. To do so then the "Create Audit Fields" feature must be enabled.
-Please see [this help article](https://help.salesforce.com/articleView?id=000230837&type=1&language=en_US) for instructions enable this feature.
+Please see [this help article](https://help.salesforce.com/articleView?id=000213290&type=1&language=en_US) for instructions enable this feature.
 
 ![screen shot](images/setup-enable-create-audit-fields2.png)
 
