@@ -22,6 +22,14 @@
         <name>ApexClass</name>
     </types>
     <types>
+        <members>ConvertNotesFAQPage</members>
+        <members>ConvertNotesMenuPage</members>
+        <members>ConvertNotesRunOncePage</members>
+        <members>ConvertNotesSchedulePage</members>
+        <members>ConvertNotesSettingsPage</members>
+        <name>ApexPage</name>
+    </types>
+    <types>
         <members>ConvertNotesToContentNotesTrigger</members>
         <name>ApexTrigger</name>
     </types>
@@ -53,5 +61,5 @@
         <members>Convert_Notes_to_ContentNotes</members>
         <name>PermissionSet</name>
     </types>
-    <version>39.0</version>
+    <version>40.0</version>
 </Package>

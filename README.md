@@ -1,204 +1,191 @@
-Convert Notes & Attachments to Chatter Files
-============================================
+Convert Notes to Enhanced Notes
+===============================
 
 Overview
 --------
 
-This project contains multiple apex classes (triggers, queueables, batchables, schedulables) to assist with the manual or automatic conversion of
-classic [Notes](https://developer.salesforce.com/docs/atlas.en-us.api.meta/api/sforce_api_objects_note.htm) and [Attachments](https://developer.salesforce.com/docs/atlas.en-us.api.meta/api/sforce_api_objects_attachment.htm)
-into [Enhanced Notes](https://developer.salesforce.com/docs/atlas.en-us.api.meta/api/sforce_api_objects_contentnote.htm) and [Chatter Files](https://developer.salesforce.com/docs/atlas.en-us.api.meta/api/sforce_api_objects_contentversion.htm)
-to take advantage of rich-text, and more sophisticated sharing and file revisions.
-You may like to read my [blog post](https://douglascayers.wordpress.com/2015/10/10/salesforce-convert-attachments-to-chatter-files/) on the topic.
+In [Winter '16](https://releasenotes.docs.salesforce.com/en-us/winter16/release-notes/rn_mobile_salesforce1_otherfeat_notes_ga.htm) the new enhanced Notes tool became generally available,
+and with it introduced a new "Notes" related list separate from the classic "Notes & Attachments" related list.
+
+In [Spring '17](https://releasenotes.docs.salesforce.com/en-us/spring17/release-notes/rn_files_add_related_list_to_page_layouts.htm) Salesforce announced that in **Winter '18**
+the "Notes & Attachments" related list will no longer have an upload or attach button. Customers will be required to migrate to and adopt Salesforce Files.
+Although this change is specific to Attachments/Files, it is very clear that "Notes & Attachments" related list will eventually be retired in favor of the new **Files** and **Notes** related lists.
+
+At the time of this project, Salesforce has not (yet?) provided an official conversion tool from Notes to Enhanced Notes.
+
+This project enables the manual or automatic conversion of classic [Notes](https://developer.salesforce.com/docs/atlas.en-us.api.meta/api/sforce_api_objects_note.htm)
+into [Enhanced Notes](https://developer.salesforce.com/docs/atlas.en-us.api.meta/api/sforce_api_objects_contentnote.htm)
+to take advantage of more sophisticated features, like sharing, revisions, rich text, images, etc.
+
+The package includes visualforce pages that let you:
+* Configure sharing and conversion options
+* Run test conversions
+* Enable near real-time or scheduled conversions
+
+Additional Background:
+* [Setup Notes](https://help.salesforce.com/articleView?id=notes_admin_setup.htm)
+* [Considerations for Enabling Enhanced Notes](https://help.salesforce.com/articleView?id=Consideration-for-enhanced-notes-and-using-Files)
+* [ContentNote Documentation](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_contentnote.htm)
 
 
-Installation
-------------
-
-* [Deploy from Github](https://githubsfdeploy.herokuapp.com)
-
-
-Usage
------
-
-There are three main ways to perform the conversions:
-
-1. Manually invoke a batchable class for a one-time conversion of notes or attachments in database
-2. Schedule a batchable class for periodic conversions of notes or attachments in database (e.g. daily, monthly)
-3. Enable a trigger to near real-time convert notes or attachments as they are inserted
-
-When you choose option `1` or `2` then you likely are kicking off the process using Developer Console.
-You will want to configure some preferences with the `ConvertAttachmentsToFilesOptions` or `ConvertNotesToContentNotesOptions` classes
-when you execute or schedule the pertinent batchable class, `ConvertAttachmentsToFilesBatchable` or `ConvertNotesToContentNotesBatchable`.
-
-When you choose option `3` then you configure your preferences instead using **custom settings**.
-This project includes two custom settings, **Convert Attachments to Files Settings** and **Convert Notes to ContentNotes Settings**.
-They are hierarchical settings and you likely only need the default organization level values configured.
-Please note, the settings you can toggle available to you are exactly the same regardless which option (1, 2, or 3) you choose.
-
-|Attachment Settings                     |Description                                                                                      |
-|----------------------------------------|-------------------------------------------------------------------------------------------------|
-|Convert in Near Real Time?              |Enables trigger to convert attachments to files. Invokes queuable to process them asynchronously.|
-|Convert Inbound Email Attachments?      |Email-2-Case Only: converts inbound email attachments to files shared with the Case.                |
-|Share Private Attachments?              |If private attachment is converted, will share its access with the parent record or not.         |
-|Delete Attachment Once Converted?       |Deletes attachment once converted. This can save storage space. Backup your data!                |
-|Convert If Feed Tracking Disabled?      |If parent record does not support Chatter Files, still convert it? It won't be shared to record. |
-|Conversion Result Email Notifications   |Comma-delimited list of email addresses to send conversion success/failure results to.           |
-|Chatter Post to Case Inbound Email File?|(not yet implemented) Chatter Post with converted File so Case Team can quickly and easily collaborate on it.|
-
-
-|Note Settings                           |Description                                                                                         |
-|----------------------------------------|----------------------------------------------------------------------------------------------------|
-|Convert in Near Real Time?              |Enables trigger to convert notes to enhanced notes. Invokes queuable to process them asynchronously.|
-|Share Private Notes?                    |If private note is converted, will share its access with the parent record or not.                  |
-|Delete Note Once Converted?             |Deletes note once converted. This can save storage space. Backup your data!                         |
-|Convert If Feed Tracking Disabled?      |If parent record does not support Chatter Files, still convert it? It won't be shared to record.    |
-|Conversion Result Email Notifications   |Comma-delimited list of email addresses to send conversion success/failure results to.              |
-
-
-Examples
---------
-
-*Manually Invoke Batchable Class*
-
-    // default options per custom setting
-    Convert_Attachments_to_Files_Settings__c settings = Convert_Attachments_to_Files_Settings__c.getInstance();
-    ConvertAttachmentsToFilesOptions options = new ConvertAttachmentsToFilesOptions( settings );
-
-    // or, explicitly set options for this run
-    ConvertAttachmentsToFilesOptions options = new ConvertAttachmentsToFilesOptions();
-    options.deleteAttachmentsUponConversion = false;
-
-    // then run batchable
-    ConvertAttachmentsToFilesBatchable batchable = new ConvertAttachmentsToFilesBatchable( options );
-    Database.executeBatch( batchable, 100 );
-
-*Schedule Batachable Class*
-
-    // default options per custom setting
-    Convert_Attachments_to_Files_Settings__c settings = Convert_Attachments_to_Files_Settings__c.getInstance();
-    ConvertAttachmentsToFilesOptions options = new ConvertAttachmentsToFilesOptions( settings );
-
-    // or, explicitly set options for this run
-    ConvertAttachmentsToFilesOptions options = new ConvertAttachmentsToFilesOptions();
-    options.deleteAttachmentsUponConversion = false;
-
-    // then schedule job
-    // note, to change options after job is scheduled you need to stop the job and kick it off again with new option selections
-    System.schedule( 'Convert Attachments to Files Job', '0 0 13 * * ?', new ConvertAttachmentsToFilesSchedulable( options ) );
-
-*Enable Trigger for Real-Time*
-
-    In Setup, check or uncheck the "Convert in Real Time?" custom setting.
-    The apex triggers look at those values in real-time to know whether to convert or not.
-
-
-Private Notes / Attachments
----------------------------
-Classic Notes & Attachments have an 'IsPrivate' checkbox field that when selected
-makes the record only visible to the owner and administrators, even through the
-Note or Attachment is related to the parent entity (e.g. Account or Contact).
-However, ContentVersion object follows a different approach. Rather than an
-explicit 'IsPrivate' checkbox it uses a robust sharing model, one of the reasons
-to convert to the new Notes and Files to begin with! In this sharing model, to
-make a record private then it simpy isn't shared with any other users or records.
-The caveat then is that these unshared (private) Notes and Files do not show up
-contextually on any Salesforce record. By sharing the new Note or File with the
-original parent record then any user who has visibility to that parent record now
-has access to this previously private note or attachment. Therefore, when converting
-you have the option to specify whether the private notes and attachments should
-or should not be shared with the parent entity once converted into new Note or File.
-
-Learn more at:
-* https://help.salesforce.com/apex/HTViewHelpDoc?id=notes_fields.htm
-
-
-Inactive Owners
----------------
-ContentNote object does not allow setting the owner (or any audit fields),
-even if the "Create Audit Fields" permission is enabled. The owner always
-defaults to the current running user performing the conversion.
-However, we can update the ContentNote to be assigned to the original note's owner
-provided that the original note's owner is still active. Salesforce does not
-allow records to be updated to be owned by inactive users, this is why it is
-such a bummer that ContentNote object does not support setting audit fields on create.
-
-Please vote for this idea [Need to retain original createdDate and time on notes when importing](https://success.salesforce.com/ideaView?id=08730000000BrSsAAK).
-
-
-Selecting Parent IDs
---------------------
-You may want to test conversion on a subset of records rather than convert
-your entire database all at once. To do this you can specify `parentIds` on the
-option classes which takes a Set of record ids who are the parent entities
-that the notes or attachments belong to that you want to convert.
-
-
-Max Documents or Versions Published Governor Limit
---------------------------------------------------
-
-When converting classic Notes & Attachments the new data is stored in the `ContentVersion` object.
-There is a [limit to how many of these records can be created in a 24 hour period](https://help.salesforce.com/articleView?id=limits_general.htm&language=en_US&type=0).
-If you have a lot of Notes & Attachments to convert plan around this limit and split the work across multiple days.
-
-
-Background
-----------
-In the Winter 16 release, Salesforce introduces a new related list called Files.
-This new related list specifically shows only Chatter Files shared to the record.
-Seeing as this is the future of Salesforce content, you may want to plan migrating
-your existing Attachments to Chatter Files. That is the function of this class.
-
-Migrating to Files instead of Attachments is a good idea because Chatter Files
-provide you much more capabilities around sharing the file with other users, groups, and records.
-It also supports file previews and revisions. It is the future of managing content in Salesforce.
-
-Furthermore, Salesforce released new Notes feature that supports rich-text and the same sharing capabilities as Chatter Files.
-In fact, the new Notes feature is built on top of the same Chatter Files technology!
-
-Learn more at:
-* http://docs.releasenotes.salesforce.com/en-us/winter16/release-notes/rn_chatter_files_related_list.htm#topic-title
-* https://developer.salesforce.com/docs/atlas.en-us.api.meta/api/sforce_api_objects_contentversion.htm
-* http://docs.releasenotes.salesforce.com/en-us/winter16/release-notes/notes_admin_setup.htm
-
-Example page layout with the new **Files** and **Notes** related lists added:
-![screenshot](/images/related-lists-pre-conversion.png)
-
-Example results after running the conversion code:
-![screenshot](/images/related-lists-post-conversion.png)
+Idea Exchange
+-------------
+* [Need to retain original createdDate and time on notes when importing](https://success.salesforce.com/ideaView?id=08730000000BrSsAAK)
+* [Ability to Default Sharing Settings on New Notes (Content Note)](https://success.salesforce.com/ideaView?id=0873A000000E2a6QAC)
+* [Add "New" Notes to Data Import Wizard with Parent Object Linking](https://success.salesforce.com/ideaView?id=08730000000E1cEAAS)
 
 
 Pre-Requisites
 --------------
 
-To install this solution then you must have [enhanced notes enabled](http://docs.releasenotes.salesforce.com/en-us/winter16/release-notes/notes_admin_setup.htm).
-![screenshot](/images/notes-settings.png)
+* Enable [Create Audit Fields](https://help.salesforce.com/articleView?id=Enable-Create-Audit-Fields) so Note create/update/owner fields can be preserved on the new enhanced notes
+
+![screen shot](images/setup-enable-create-audit-fields1.png)
+
+* Enable [New Notes](https://help.salesforce.com/articleView?id=notes_admin_setup.htm) so ContentNote object exists and the new note-taking tool is available
+
+![screen shot](images/setup-enable-notes.png)
+
+Packaged Release History
+------------------------
+
+Release 1.0 (latest)
+-----------
+* Install package (coming soon)
+
+Installing the Source Code (Developers)
+---------------------------------------
+
+You may install the unmanaged code from GitHub and make any desired adjustments. You are responsible for ensuring unit tests meet your org's validation rules and other requirements.
+
+* [Deploy from Github](https://githubsfdeploy.herokuapp.com)
 
 
-Credits
--------
-* Code adapted from Chirag Mehta's [post on stackoverflow](http://stackoverflow.com/questions/11395148/related-content-stored-in-which-object-how-to-create-related-content-recor).
-* Note content escaping adapted from David Reed's [project](https://github.com/davidmreed/DMRNoteAttachmentImporter).
-
-
-Idea Exchange
--------------
-
-Need to retain original createdDate and time on notes when importing
-https://success.salesforce.com/ideaView?id=08730000000BrSsAAK
-
-Ability to Default Sharing Settings on New Notes (Content Note)
-https://success.salesforce.com/ideaView?id=0873A000000E2a6QAC
-
-Add "New" Notes to Data Import Wizard with Parent Object Linking
-https://success.salesforce.com/ideaView?id=08730000000E1cEAAS
-
-
-Other Resources
+Getting Started
 ---------------
 
-Importing Notes to the ContentNote object using the Apex Data Loader
-https://help.salesforce.com/articleView?id=000230867
+1. Enable setting [Create Audit Fields](https://help.salesforce.com/articleView?id=Enable-Create-Audit-Fields) so Note create/update/owner fields can be preserved on the new enhanced notes
+2. Enable setting [New Notes](https://help.salesforce.com/articleView?id=notes_admin_setup.htm) so ContentNote object exists and the new note-taking tool is available
+3. Add "Notes" related list to your page layouts (e.g. Accounts, Contacts, Tasks, Events, etc.)
+4. Deploy the package using one of the installation links above
+5. Assign yourself the permission set **Convert Notes to Enhanced Notes** then switch to the app by the same name
+6. On the **Convert Notes to Enhanced Notes** tab page, click on **Setup Conversion Settings** to configure sharing and conversion behavior
+7. Perform a **test** conversion
+8. Consider **automating** conversion
 
-ContentNote Object Reference
-https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_contentnote.htm
+![screen shot](images/pages-main-menu.png)
 
+![screen shot](images/pages-conversion-settings.png)
+
+
+FAQ
+===
+
+Max Documents or Versions Published Governor Limit
+--------------------------------------------------
+When converting classic Notes & Attachments the new data is stored in the `ContentVersion` object.
+There is a [limit to how many of these records can be created in a 24 hour period](https://help.salesforce.com/articleView?id=limits_general.htm&language=en_US&type=0).
+With [Summer '17](https://releasenotes.docs.salesforce.com/en-us/summer17/release-notes/rn_files_limits.htm) release the limit is increased from 36,000 to 200,000!
+If you have a lot of Notes & Attachments to convert plan around this limit and split the work across multiple days.
+
+
+Field is not writeable: ContentVersion.CreatedById
+--------------------------------------------------
+When you deploy the package you might get error that files are invalid and need recompilation and one of the specific messages
+might say "Field is not writeable: ContentVersion.CreatedById". The conversion tool tries to copy the notes's original
+created and last modified date/user to the converted enhanced note. To do so then the "Create Audit Fields" feature must be enabled.
+Please see [this help article](https://help.salesforce.com/articleView?id=Enable-Create-Audit-Fields) for instructions enable this feature.
+
+![screen shot](images/setup-enable-create-audit-fields2.png)
+
+![screen shot](images/setup-enable-create-audit-fields1.png)
+
+
+Visibility InternalUsers is not permitted for this linked record.
+-----------------------------------------------------------------
+When the conversion tool shares the enhanced note to the note's owner and parent record the
+**ContentDocumentLink.Visibility** field controls which community of users, internal or external,
+may gain access to the enhanced note if they have access to the related record.
+
+When communities are **enabled** then both picklist values `AllUsers` and `InternalUsers` are acceptable.
+When communities are **disabled** then only the picklist value `AllUsers` is acceptable.
+
+This error usually means communities are **disabled** in your org and you're trying to set the
+visibility of the converted enhanced notes to `InternalUsers`.
+
+To fix then either (a) enable communities or (b) change the visibility option to `AllUsers`.
+
+
+INSUFFICIENT_ACCESS_OR_READONLY, Invalid sharing type I: [ShareType]
+--------------------------------------------------------------------
+This error means the object the new file is trying to be shared to does not support the conversion setting **Users inherit view or edit access to the file based on their view or edit access to the attachment's parent record** and instead you must try **Users can only view the file but cannot edit it, even if the user can edit the attachment's parent record**.
+
+This is known to occur with `Solution` object and likely other objects.
+
+
+FIELD_INTEGRITY_EXCEPTION, Owner ID: id value of incorrect type: 035xxxxxxxxxxxxxxx: [OwnerId]
+----------------------------------------------------------------------------------------------
+Prior to Spring '12, Salesfore customers could have [Self-Service Portals](https://help.salesforce.com/articleView?id=customize_selfserviceenable.htm), which pre-date the modern Communities we have today.
+This error means the Note is owned by a Self-Service User and ContentVersions cannot be owned by them.
+You may want to consider changing ownership of those notes to actual user records whose IDs start with **005** prefix.
+
+
+How are private notes converted?
+--------------------------------
+Classic Notes & Attachments have an [IsPrivate](https://help.salesforce.com/apex/HTViewHelpDoc?id=notes_fields.htm) checkbox field that when selected
+makes the record only visible to the owner and administrators, even through the
+Note or Attachment is related to the parent entity (e.g. Account or Contact).
+However, ContentNote object follows a different approach. Rather than an
+explicit 'IsPrivate' checkbox it uses a robust sharing model, one of the reasons
+to convert to the new enhanced notes to begin with! In this sharing model, to
+make a record private then it simpy isn't shared with any other users or records.
+The caveat then is that these unshared (private) enhanced notes do not show up
+contextually on any Salesforce record. By sharing the new enhanced note with the
+original parent record then any user who has visibility to that parent record now
+has access to this previously private note. Therefore, when converting
+you have the option to specify whether the private notes should
+or should not be shared with the parent entity once converted into new enhanced note.
+
+
+Inactive Owners
+---------------
+ContentNote records cannot be created and be owned by an inactive user.
+The enhanced notes must be owned by an active user to be created otherwise get error `INACTIVE_OWNER_OR_USER, owner or user is inactive.`.
+Prior to running conversion you should either (a) update all old notes with inactive owners to be owned by an active user, or (b) convert them manually first.
+
+
+If I run the conversion multiple times, do duplicate enhanced notes get created for the same notes?
+---------------------------------------------------------------------------------------------------
+No, no duplicate enhanced notes should be created once a note has been converted once.
+When notes are converted into enhanced notes we store the `Note.ID` in the `ContentVersion.Original_Record_ID__c` field for tracking purposes.
+The conversion logic first checks if there exist any enhanced notes that have been stamped with the note id, if yes then we skip converting that note again.
+
+Of course, if you choose the conversion option to delete the notes upon conversion then no such note would exist the second time around.
+But if you choose to keep the notes post conversion they will not be converted again if you run conversion process multiple times.
+
+
+Disclaimer
+==========
+
+This is not an official conversion tool by salesforce.com to migrate Notes to Enhanced Notes.
+This is a personal project by [Doug Ayers](https://douglascayers.com) to assist customers in migrating to and adopting Enhanced Notes.
+Although this tool has been successfully tested with several customers since 2015 that have
+between dozens to tens of thousands of notes, please do your own due diligence
+and testing in a sandbox before ever attempting this in production.
+
+Always make a backup of your data before attempting any data conversion operations.
+
+You may read the project license [here](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/blob/master/LICENSE).
+
+
+Special Thanks
+==============
+
+* [Arnab Bose](https://www.linkedin.com/in/abosesf/) ([@ArBose](https://twitter.com/ArBose)), Salesforce Product Manager
+* [Haris Ikram](https://www.linkedin.com/in/harisikram/) ([@HarisIkramH](https://twitter.com/HarisIkramH)), Salesforce Product Manager
+* [David Mendelson](https://www.linkedin.com/in/davidmendelson/), Salesforce Product Manager
+* [Neil Hayek](https://success.salesforce.com/_ui/core/userprofile/UserProfilePage?u=00530000003SpRmAAK), Salesforce Chatter Expert
+* [Arthur Louie](http://salesforce.stackexchange.com/users/1099/alouie?tab=topactivity), Salesforce Chatter Expert
+* [Rick MacGuigan](https://www.linkedin.com/in/rick-macguigan-4406592b/), a very helpful early adopter and tester!
+* [David Reed](https://github.com/davidmreed/DMRNoteAttachmentImporter), for insight how to [escape](https://help.salesforce.com/articleView?id=000230867) HTML tags in original note content
+* And to everyone who has provided feedback on this project to make it what it is today, thank you!

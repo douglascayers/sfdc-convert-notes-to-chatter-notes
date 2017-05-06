@@ -32,7 +32,7 @@
 
                 <div>
                     <p>
-                        ContentNotes have more powerful <a href="https://help.salesforce.com/articleView?id=collab_salesforce_files_parent.htm" target="_blank">sharing options</a> than attachments, one of the <a href="https://www.salesforce.com/blog/2012/04/chatter-files-a-better-option-for-attaching-files-to-records.html" target="_blank">many reasons</a> to <a href="https://admin.salesforce.com/5-reasons-use-files-related-list" target="_blank">switch</a> to files!
+                        ContentNotes, as compared to old notes object, have more powerful <a href="https://help.salesforce.com/articleView?id=notes_admin_overview.htm" target="_blank">sharing options</a>; let you use rich text, lists and images; and relate notes to multiple records.
                     </p>
                     <p>
                         Please take a moment to carefully review your conversion sharing options below.

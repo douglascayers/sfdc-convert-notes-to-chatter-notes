@@ -239,6 +239,68 @@ private class ConvertNotesToContentNotesServiceTest {
     }
 
     @isTest
+    static void test_convert_real_time() {
+
+        Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
+        settings.Share_Type__c = 'I';
+        settings.Visibility__c = 'AllUsers';
+        settings.Convert_in_Near_Real_Time__c = true;
+        settings.Delete_Note_Once_Converted__c = false;
+        settings.Share_Private_Notes__c = true;
+
+        upsert settings;
+
+        UserRole role = [ SELECT id FROM UserRole WHERE parentRoleId = null AND portalType = 'None' LIMIT 1 ];
+
+        Profile p = [ SELECT id FROM Profile WHERE name = 'Standard User' ];
+
+        User user1, user2;
+
+        // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_testing_tools_runas.htm
+        System.runAs( new User( id = UserInfo.getUserId() ) ) {
+
+            user1 = newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
+            user2 = newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
+
+            insert new List<User>{ user1, user2 };
+
+        }
+
+        Account account = new Account(
+            ownerId = user1.id,
+            name = 'Test Account'
+        );
+
+        insert account;
+
+        Note note = new Note(
+            title = 'Hello World.txt',
+            body = 'Goodnight Moon',
+            parentId = account.id,
+            ownerId = user1.id
+        );
+
+        Test.startTest();
+
+        insert note;
+
+        Test.stopTest();
+
+        ContentVersion cv = [ SELECT id, contentDocumentId FROM ContentVersion WHERE original_record_id__c = :note.id AND isLatest = true ];
+        System.assert( cv != null );
+
+        ContentDocumentLink cdl = [ SELECT id, linkedEntityId FROM ContentDocumentLink WHERE contentDocumentId = :cv.contentDocumentId AND linkedEntityId = :account.id ];
+        System.assert( cdl != null );
+
+        ContentNote cn = [ SELECT id, latestPublishedVersionId FROM ContentNote WHERE latestPublishedVersionId = :cv.id ];
+        System.assert( cn != null );
+
+        List<Note> notes = new List<Note>([ SELECT id FROM Note WHERE id = :note.id ]);
+        System.assertEquals( 1, notes.size() );
+
+    }
+
+    @isTest
     static void test_no_delete() {
 
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
