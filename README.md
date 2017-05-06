@@ -83,6 +83,16 @@ Getting Started
 FAQ
 ===
 
+Note could not be saved
+-----------------------
+According to [Salesforce documentation](https://help.salesforce.com/articleView?id=000230867&type=1&language=en_US),
+> ContentNote currently provides a generic error like "Note could not be saved." whenever an issue is encountered while parsing the Note file itself. This is often an indication of an issue with the contents of the text body (Content) file, such as special character(s) that have not been properly escaped.
+
+Any conversion errors are reported in the **Convert Notes to Enhanced Notes Logs** object.
+If the details reported there are not sufficient for you to resolve the conversion issue then
+if you trust me share with me the note trying to be converted and I'll see if I can pinpoint if it's due to special characters or encoding.
+
+
 Max Documents or Versions Published Governor Limit
 --------------------------------------------------
 When converting classic Notes & Attachments the new data is stored in the `ContentVersion` object.
