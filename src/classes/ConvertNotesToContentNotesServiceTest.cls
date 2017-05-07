@@ -163,42 +163,48 @@ private class ConvertNotesToContentNotesServiceTest {
             title = 'Hello World.txt',
             body = 'Goodnight Moon',
             parentId = account.id,
-            ownerId = user1.id
+            ownerId = user1.id,
+            createdById = user1.id
         );
 
         Note specialTitleNote = new Note(
             title = 'Hello ! @ # $ % ^ & * ( )  + = - _ \' \" , . ? / \\ [ ] { } | ` ~ < >',
             body = 'Goodnight Moon',
             parentId = account.id,
-            ownerId = user1.id
+            ownerId = user1.id,
+            createdById = user1.id
         );
 
         Note specialBodyNote = new Note(
             title = 'Hello World.txt',
             body = 'Hello ! @ # $ % ^ & * ( )  + = - _ \' \" , . ? / \\ [ ] { } | ` ~ < >',
             parentId = account.id,
-            ownerId = user1.id
+            ownerId = user1.id,
+            createdById = user1.id
         );
 
         Note specialTitleAndBodyNote = new Note(
             title = 'Hello ! @ # $ % ^ & * ( )  + = - _ \' \" , . ? / \\ [ ] { } | ` ~ < >',
             body = 'Hello ! @ # $ % ^ & * ( )  + = - _ \' \" , . ? / \\ [ ] { } | ` ~ < >',
             parentId = account.id,
-            ownerId = user1.id
+            ownerId = user1.id,
+            createdById = user1.id
         );
 
         Note htmlBodyNote = new Note(
             title = 'Hello World.html',
             body = '<b>bold</b> <u>underline</u> <i>italic</i> <ul><li>list item</li></ul> <ol><li>list item</li></ol> <a href="www.salesforce.com">link</a> <div></div> <p></p> &nbsp; <span style="color:red">text</span> <img src="image.png"/>',
             parentId = account.id,
-            ownerId = user1.id
+            ownerId = user1.id,
+            createdById = user1.id
         );
 
         Note githubIssue8 = new Note(
             title = 'Meeting Agenda 2016-06-16 agenda.pdf',
             body = 'Meeting Agenda 2016-06-16 agenda.pdf',
             parentId = account.id,
-            ownerId = user1.id
+            ownerId = user1.id,
+            createdById = user1.id
         );
 
         Note[] notes = new Note[] { plainNote, specialTitleNote, specialBodyNote, specialTitleAndBodyNote, htmlBodyNote, githubIssue8 };
