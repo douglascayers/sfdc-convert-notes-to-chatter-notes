@@ -65,13 +65,22 @@ public with sharing class ConvertNotesToContentNotesService {
                 .replace('&apos;', '&#39;')
             ;
 
-            // oddly, ContentNote object does not allow you to set OwnerId
-            // nor can you set CreatedById or CreatedDate even with 'Create Audit Fields' permission
-            // but we can update the generated ContentVersion record with original owner id later
-            // https://success.salesforce.com/ideaView?id=08730000000BrSsAAK
+            // We set the owner of the new content note to be the
+            // same as the note's creator because both fields
+            // must have same value to insert the content note.
+            // If they do not match then we get error:
+            // "Documents in a user's private library must always be owned by that user."
+
             ContentNote newNote = new ContentNote(
+                // data fields
                 title = note.title,
-                content = Blob.valueOf( noteBody )
+                content = Blob.valueOf( noteBody ),
+                // audit fields
+                ownerId = note.createdById, // system requirement, owner and creator must be the same
+                createdById = note.createdById,
+                createdDate = note.createdDate,
+                lastModifiedById = note.lastModifiedById,
+                lastModifiedDate = note.lastModifiedDate
             );
 
             contentNotes.add( newNote );
@@ -131,10 +140,6 @@ public with sharing class ConvertNotesToContentNotesService {
 
                 ContentVersion cv = contentNotesMap.get( request.newNote.id ).latestPublishedVersion;
 
-                // retain original ownership
-                // we couldn't set ownerId on create but we can on update
-                cv.ownerId = request.oldNote.ownerId;
-
                 // custom fields for history tracking and conversion purposes
                 cv.original_record_id__c = request.oldNote.id;
                 cv.original_record_parent_id__c = request.oldNote.parentId;
@@ -165,7 +170,7 @@ public with sharing class ConvertNotesToContentNotesService {
 
             }
 
-            // apply updates to content versions, specifically setting owner id to original note owner id
+            // apply updates to content versions
             if ( contentVersions.size() > 0 ) {
                 update contentVersions;
             }
