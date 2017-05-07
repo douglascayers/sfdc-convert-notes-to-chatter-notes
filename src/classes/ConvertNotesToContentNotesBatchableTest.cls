@@ -234,23 +234,31 @@ private class ConvertNotesToContentNotesBatchableTest {
 
         insert acct;
 
-        Note note1 = new Note(
-            title = 'Hello World 1.txt',
-            body = 'Goodnight Moon',
-            parentId = acct.id,
-            ownerId = user1.id
-        );
+        System.runAs( user1 ) {
 
-        insert note1;
+            Note note1 = new Note(
+                title = 'Hello World 1.txt',
+                body = 'Goodnight Moon',
+                parentId = acct.id,
+                ownerId = user1.id
+            );
 
-        Note note2 = new Note(
-            title = 'Hello World 2.txt',
-            body = 'Goodnight Moon 2',
-            parentId = acct.id,
-            ownerId = user2.id
-        );
+            insert note1;
 
-        insert note2;
+        }
+
+        System.runAs( user2 ) {
+
+            Note note2 = new Note(
+                title = 'Hello World 2.txt',
+                body = 'Goodnight Moon 2',
+                parentId = acct.id,
+                ownerId = user2.id
+            );
+
+            insert note2;
+
+        }
 
         System.runAs( new User( id = UserInfo.getUserId() ) ) {
 

@@ -112,19 +112,24 @@ public with sharing class ConvertNotesToContentNotesService {
              * Doing so will share the new note so it's accessible by others.
              */
 
-            Map<ID, ContentNote> contentNotesMap = new Map<ID, ContentNote>([
+            Set<ID> contentNoteIds = new Map<ID, ContentNote>( contentNotes ).keySet();
+
+            Map<ID, ContentDocument> contentDocumentMap = new Map<ID, ContentDocument>();
+            for ( ContentDocumentLink cdl : [
                 SELECT
                     id,
-                    ownerId,
-                    latestPublishedVersionId,
-                    latestPublishedVersion.contentDocumentId
+                    linkedEntityId,
+                    contentDocumentId,
+                    contentDocument.latestPublishedVersionId
                 FROM
-                    ContentNote
+                    ContentDocumentLink
                 WHERE
-                    id IN :contentNotes
-            ]);
+                    contentDocumentId IN :contentNoteIds
+            ]) {
+                contentDocumentMap.put( cdl.contentDocumentId, cdl.contentDocument );
+            }
 
-            System.assertEquals( contentNotes.size(), contentNotesMap.size() );
+            System.assertEquals( contentNotes.size(), contentDocumentMap.size() );
 
             /*
              * Step 3
@@ -138,12 +143,16 @@ public with sharing class ConvertNotesToContentNotesService {
 
             for ( ConversionRequest request : conversionRequests ) {
 
-                ContentVersion cv = contentNotesMap.get( request.newNote.id ).latestPublishedVersion;
+                ContentDocument cd = contentDocumentMap.get( request.newNote.id );
 
-                // custom fields for history tracking and conversion purposes
-                cv.original_record_id__c = request.oldNote.id;
-                cv.original_record_parent_id__c = request.oldNote.parentId;
-                cv.original_record_owner_id__c = request.oldNote.ownerId;
+                ContentVersion cv = new ContentVersion(
+                    id = cd.latestPublishedVersionId,
+                    contentDocumentId = cd.id,
+                    // custom fields for history tracking and conversion purposes
+                    original_record_id__c = request.oldNote.id,
+                    original_record_parent_id__c = request.oldNote.parentId,
+                    original_record_owner_id__c = request.oldNote.ownerId
+                );
 
                 contentVersions.add( cv );
 
