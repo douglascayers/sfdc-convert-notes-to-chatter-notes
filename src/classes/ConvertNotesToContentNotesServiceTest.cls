@@ -14,6 +14,7 @@ private class ConvertNotesToContentNotesServiceTest {
             settings.Visibility__c = 'AllUsers';
             settings.Convert_in_Near_Real_Time__c = true;
             settings.Delete_Note_Once_Converted__c = false;
+            settings.Convert_Private_Notes__c = true;
             settings.Share_Private_Notes__c = true;
 
             upsert settings;
@@ -125,6 +126,123 @@ private class ConvertNotesToContentNotesServiceTest {
     }
 
     @isTest
+    static void test_cannot_convert_notes_with_inactive_owners() {
+
+        Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
+        settings.Share_Type__c = 'I';
+        settings.Visibility__c = 'AllUsers';
+        settings.Convert_in_Near_Real_Time__c = false;
+        settings.Delete_Note_Once_Converted__c = false;
+        settings.Convert_Private_Notes__c = true;
+        settings.Share_Private_Notes__c = false;
+
+        upsert settings;
+
+        PermissionSet permset = [ SELECT id FROM PermissionSet WHERE name = 'Convert_Notes_to_ContentNotes' LIMIT 1 ];
+
+        UserRole role = [ SELECT id FROM UserRole WHERE parentRoleId = null AND portalType = 'None' LIMIT 1 ];
+
+        Profile p = [ SELECT id FROM Profile WHERE name = 'Standard User' ];
+
+        User user1, user2;
+
+        // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_testing_tools_runas.htm
+        System.runAs( new User( id = UserInfo.getUserId() ) ) {
+
+            user1 = newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
+            user2 = newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
+
+            insert new List<User>{ user1, user2 };
+
+            PermissionSetAssignment psa = new PermissionSetAssignment(
+                assigneeId = user1.id,
+                permissionSetId = permset.id
+            );
+
+            insert psa;
+
+        }
+
+        Account acct = new Account(
+            ownerId = user1.id,
+            name = 'Community Account'
+        );
+
+        insert acct;
+
+        Contact cont = new Contact(
+            accountId = acct.id,
+            firstName = 'Beta',
+            lastName = 'User 2'
+        );
+
+        insert cont;
+
+        Test.startTest();
+
+        System.runAs( user2 ) {
+
+            Note note1 = new Note(
+                title = 'Hello World.txt',
+                body = 'Goodnight Moon',
+                parentId = acct.id,
+                ownerId = user2.id
+            );
+
+            insert note1;
+
+            Note note2 = new Note(
+                title = 'Hello World.txt',
+                body = 'Goodnight Moon',
+                parentId = cont.id,
+                ownerId = user2.id
+            );
+
+            insert note2;
+
+        }
+
+        System.runAs( new User( id = UserInfo.getUserId() ) ) {
+
+            user2.isActive = false;
+
+            update user2;
+
+        }
+
+        Test.stopTest();
+
+        // must do assert after stopping test because of async code
+        System.assertEquals( 0, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId IN ( :acct.id, :cont.id ) ] );
+
+        System.runAs( user1 ) {
+
+            List<Note> notes = [
+                SELECT
+                    id, parentId, ownerId, title, body, isPrivate,
+                    createdById, createdDate, lastModifiedById, lastModifiedDate
+                FROM
+                    Note
+            ];
+
+            ConvertNotesToContentNotesService service = new ConvertNotesToContentNotesService();
+
+            // we should get back no ids since the notes haven't been converted yet
+            Set<ID> convertedNoteIds = service.filterAlreadyConvertedNoteIds( notes );
+            System.assertEquals( 0, convertedNoteIds.size() );
+
+            try {
+                List<ConvertNotesToContentNotesService.ConversionResult> results = service.convert( notes );
+                System.assert( false, 'Should have failed' );
+            } catch  ( DmlException e ) {
+                System.assert( e.getMessage().contains( 'CANNOT_INSERT_UPDATE_ACTIVATE_ENTITY, This user is inactive.' ) );
+            }
+
+        }
+
+    }
+
+    @isTest
     static void test_special_characters() {
 
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
@@ -132,6 +250,7 @@ private class ConvertNotesToContentNotesServiceTest {
         settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
+        settings.Convert_Private_Notes__c = true;
         settings.Share_Private_Notes__c = true;
 
         upsert settings;
@@ -252,6 +371,7 @@ private class ConvertNotesToContentNotesServiceTest {
         settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = true;
         settings.Delete_Note_Once_Converted__c = false;
+        settings.Convert_Private_Notes__c = true;
         settings.Share_Private_Notes__c = true;
 
         upsert settings;
@@ -314,6 +434,7 @@ private class ConvertNotesToContentNotesServiceTest {
         settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = false;
+        settings.Convert_Private_Notes__c = true;
         settings.Share_Private_Notes__c = true;
 
         upsert settings;
@@ -397,6 +518,7 @@ private class ConvertNotesToContentNotesServiceTest {
         settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
+        settings.Convert_Private_Notes__c = true;
         settings.Share_Private_Notes__c = true;
 
         upsert settings;
@@ -483,6 +605,7 @@ private class ConvertNotesToContentNotesServiceTest {
         settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
+        settings.Convert_Private_Notes__c = true;
         settings.Share_Private_Notes__c = false;
 
         upsert settings;
@@ -564,6 +687,7 @@ private class ConvertNotesToContentNotesServiceTest {
         settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
+        settings.Convert_Private_Notes__c = true;
         settings.Share_Private_Notes__c = true;
 
         upsert settings;
@@ -645,6 +769,7 @@ private class ConvertNotesToContentNotesServiceTest {
         settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = false;
+        settings.Convert_Private_Notes__c = true;
         settings.Share_Private_Notes__c = true;
 
         upsert settings;
@@ -739,6 +864,7 @@ private class ConvertNotesToContentNotesServiceTest {
         settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = true;
         settings.Delete_Note_Once_Converted__c = true;
+        settings.Convert_Private_Notes__c = true;
         settings.Share_Private_Notes__c = true;
 
         upsert settings;
@@ -752,6 +878,7 @@ private class ConvertNotesToContentNotesServiceTest {
         System.assertEquals( settings.Share_Type__c, options.shareType );
         System.assertEquals( settings.Visibility__c, options.visibility );
         System.assertEquals( settings.Delete_Note_Once_Converted__c, options.deleteNotesUponConversion );
+        System.assertEquals( settings.Convert_Private_Notes__c, options.convertPrivateNotes );
         System.assertEquals( settings.Share_Private_Notes__c, options.sharePrivateNotesWithParentRecord );
 
     }

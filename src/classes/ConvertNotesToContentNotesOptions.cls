@@ -40,6 +40,16 @@ public with sharing class ConvertNotesToContentNotesOptions {
     // then the new ContentNote cannot be shared with the parent record
     // because doing so would grant any user who has at least read access
     // to the record to now have read access to the previously private note content.
+    // This flag indicates whether privates notes should or should not be converted.
+    // If true then a second preference is considered in how private notes will be converted.
+    public Boolean convertPrivateNotes { get; set; }
+
+    // Only applicable if 'convertPrivateNotes' is true.
+    // Classic Notes have a 'IsPrivate' field that when checked the note
+    // is only visible to the owner and administrators. To preserve this
+    // then the new ContentNote cannot be shared with the parent record
+    // because doing so would grant any user who has at least read access
+    // to the record to now have read access to the previously private note content.
     // The alternative is to still convert the note but don't share it with the
     // parent record; however, now the new Notes are not categorized at all
     // so these now technically private new Notes have no context beyond their content.
@@ -60,6 +70,7 @@ public with sharing class ConvertNotesToContentNotesOptions {
         this.shareType = settings.share_type__c;
         this.visibility = settings.visibility__c;
         this.deleteNotesUponConversion = settings.delete_note_once_converted__c;
+        this.convertPrivateNotes = settings.convert_private_notes__c;
         this.sharePrivateNotesWithParentRecord = settings.share_private_notes__c;
         this.parentIds = null;
     }

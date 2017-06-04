@@ -20,6 +20,7 @@ private class ConvertNotesInstallHandlerTest {
         System.assertEquals( 'AllUsers', settings.Visibility__c );
         System.assertEquals( false, settings.Convert_in_Near_Real_Time__c );
         System.assertEquals( false, settings.Delete_Note_Once_Converted__c );
+        System.assertEquals( false, settings.Convert_Private_Notes__c );
         System.assertEquals( false, settings.Share_Private_Notes__c );
 
     }
@@ -32,6 +33,7 @@ private class ConvertNotesInstallHandlerTest {
         preSettings.Visibility__c = 'InternalUsers';
         preSettings.Convert_in_Near_Real_Time__c = true;
         preSettings.Delete_Note_Once_Converted__c = true;
+        preSettings.Convert_Private_Notes__c = true;
         preSettings.Share_Private_Notes__c = true;
 
         upsert preSettings;
@@ -49,6 +51,7 @@ private class ConvertNotesInstallHandlerTest {
         System.assertEquals( preSettings.Visibility__c, postSettings.Visibility__c );
         System.assertEquals( preSettings.Convert_in_Near_Real_Time__c, postSettings.Convert_in_Near_Real_Time__c );
         System.assertEquals( preSettings.Delete_Note_Once_Converted__c, postSettings.Delete_Note_Once_Converted__c );
+        System.assertEquals( preSettings.Convert_Private_Notes__c, postSettings.Convert_Private_Notes__c );
         System.assertEquals( preSettings.Share_Private_Notes__c, postSettings.Share_Private_Notes__c );
 
     }

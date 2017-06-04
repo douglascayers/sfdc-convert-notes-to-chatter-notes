@@ -4,6 +4,16 @@
     <description>Controls when and how certain notes are converted to enhanced notes.</description>
     <enableFeeds>false</enableFeeds>
     <fields>
+        <fullName>Convert_Private_Notes__c</fullName>
+        <defaultValue>false</defaultValue>
+        <description>Notes have &apos;IsPrivate&apos; field that limits access to owner and admins. ContentNotes related to records are not private. Enable this option to convert private notes to enhanced notes. Please consider your company&apos;s regulatory and security policies before enabling this option as it may expose data to new audiences.</description>
+        <externalId>false</externalId>
+        <inlineHelpText>Notes have &apos;IsPrivate&apos; field that limits access to owner and admins. ContentNotes related to records are not private. Please consider your company&apos;s regulatory and security policies before enabling this option as it may expose data to new audiences.</inlineHelpText>
+        <label>Convert Private Notes?</label>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
         <fullName>Convert_in_Near_Real_Time__c</fullName>
         <defaultValue>false</defaultValue>
         <description>Enables &apos;after insert&apos; trigger on Note that enqueues job to convert into ContentNotes in near real-time. This async conversion does not slow down save transaction, and if &apos;Delete Notes&apos; option is enabled then deletes in separate transaction too.</description>

@@ -12,6 +12,7 @@ private class ConvertNotesToContentNotesQueueableTest {
         settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
+        settings.Convert_Private_Notes__c = true;
         settings.Share_Private_Notes__c = true;
 
         upsert settings;
@@ -79,6 +80,7 @@ private class ConvertNotesToContentNotesQueueableTest {
         settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = false;
+        settings.Convert_Private_Notes__c = true;
         settings.Share_Private_Notes__c = true;
 
         upsert settings;
@@ -145,6 +147,7 @@ private class ConvertNotesToContentNotesQueueableTest {
         settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
+        settings.Convert_Private_Notes__c = true;
         settings.Share_Private_Notes__c = true;
 
         upsert settings;
@@ -193,6 +196,7 @@ private class ConvertNotesToContentNotesQueueableTest {
         settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
+        settings.Convert_Private_Notes__c = true;
         settings.Share_Private_Notes__c = true;
 
         upsert settings;
