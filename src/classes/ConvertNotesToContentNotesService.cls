@@ -76,8 +76,8 @@ public with sharing class ConvertNotesToContentNotesService {
                 title = note.title,
                 content = Blob.valueOf( noteBody ),
                 // audit fields
-                ownerId = note.createdById, // system requirement, owner and creator must be the same
-                createdById = note.createdById,
+                ownerId = note.ownerId, // system requirement, owner and creator must be the same
+                createdById = note.ownerId,
                 createdDate = note.createdDate,
                 lastModifiedById = note.lastModifiedById,
                 lastModifiedDate = note.lastModifiedDate
