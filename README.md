@@ -154,9 +154,15 @@ make a record private then it simpy isn't shared with any other users or records
 The caveat then is that these unshared (private) enhanced notes do not show up
 contextually on any Salesforce record. By sharing the new enhanced note with the
 original parent record then any user who has visibility to that parent record now
-has access to this previously private note. Therefore, when converting
-you have the option to specify whether the private notes should
-or should not be shared with the parent entity once converted into new enhanced note.
+has access to this previously private note.
+
+Therefore, when converting you have the option to:
+
+(a) ignore private notes and not convert them
+
+(b) convert and share them with the parent entity
+
+(c) convert them but don't share them with the parent entity, they will reside in the note owner's private library
 
 
 Inactive Owners

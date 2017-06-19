@@ -4,6 +4,10 @@
         <application>Convert_Notes_to_ContentNotes</application>
         <visible>true</visible>
     </applicationVisibilities>
+    <applicationVisibilities>
+        <application>Convert_Notes_to_ContentNotes_Lightning</application>
+        <visible>true</visible>
+    </applicationVisibilities>
     <classAccesses>
         <apexClass>ConvertNotesInstallHandler</apexClass>
         <enabled>false</enabled>
