@@ -56,13 +56,8 @@ private class ConvertNotesRunOnceControllerTest {
         System.assertEquals( true, controller.success );
         System.assert( controller.message.containsIgnoreCase( 'Conversion batch job submitted' ) );
 
-        List<ContentVersion> cv = [ SELECT id, contentDocumentId, original_record_id__c FROM ContentVersion WHERE isLatest = true ORDER BY original_record_id__c ];
-        System.assertEquals( 2, cv.size() );
-        System.assertEquals( note1.id, cv[0].original_record_id__c );
-        System.assertEquals( note2.id, cv[1].original_record_id__c );
-
-        System.assertEquals( 1, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct1.id ] );
-        System.assertEquals( 1, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct2.id ] );
+        System.assertEquals( 1, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct1.id AND contentDocument.latestPublishedVersion.original_record_id__c = :note1.id ] );
+        System.assertEquals( 1, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct2.id AND contentDocument.latestPublishedVersion.original_record_id__c = :note2.id ] );
 
     }
 
@@ -119,12 +114,8 @@ private class ConvertNotesRunOnceControllerTest {
         System.assertEquals( true, controller.success );
         System.assert( controller.message.containsIgnoreCase( 'Conversion batch job submitted' ) );
 
-        List<ContentVersion> cv = [ SELECT id, contentDocumentId, original_record_id__c FROM ContentVersion WHERE isLatest = true ORDER BY original_record_id__c ];
-        System.assertEquals( 1, cv.size() );
-        System.assertEquals( note1.id, cv[0].original_record_id__c );
-
-        System.assertEquals( 1, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct1.id ] );
-        System.assertEquals( 0, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct2.id ] );
+        System.assertEquals( 1, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct1.id AND contentDocument.latestPublishedVersion.original_record_id__c = :note1.id ] );
+        System.assertEquals( 0, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct2.id AND contentDocument.latestPublishedVersion.original_record_id__c = :note2.id ] );
 
     }
 
@@ -180,11 +171,8 @@ private class ConvertNotesRunOnceControllerTest {
 
         System.assertEquals( false, controller.success );
 
-        List<ContentVersion> cv = [ SELECT id, contentDocumentId, original_record_id__c FROM ContentVersion WHERE isLatest = true ORDER BY original_record_id__c ];
-        System.assertEquals( 0, cv.size() );
-
-        System.assertEquals( 0, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct1.id ] );
-        System.assertEquals( 0, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct2.id ] );
+        System.assertEquals( 0, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct1.id AND contentDocument.latestPublishedVersion.original_record_id__c = :note1.id ] );
+        System.assertEquals( 0, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct2.id AND contentDocument.latestPublishedVersion.original_record_id__c = :note2.id ] );
 
     }
 

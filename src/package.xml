@@ -19,6 +19,7 @@
         <members>ConvertNotesToContentNotesScheduleTest</members>
         <members>ConvertNotesToContentNotesService</members>
         <members>ConvertNotesToContentNotesServiceTest</members>
+        <members>ConvertNotesToContentNotesTestFactory</members>
         <name>ApexClass</name>
     </types>
     <types>

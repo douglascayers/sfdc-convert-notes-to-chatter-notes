@@ -29,7 +29,7 @@ private class ConvertNotesToContentNotesServiceTest {
             // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_testing_tools_runas.htm
             System.runAs( new User( id = UserInfo.getUserId() ) ) {
 
-                user1 = newUser( p1.id, r1.id, 'Alpha', 'User 1', 'user_1@example.com' );
+                user1 = ConvertNotesToContentNotesTestFactory.newUser( p1.id, r1.id, 'Alpha', 'User 1', 'user_1@example.com' );
 
                 insert user1;
 
@@ -53,7 +53,7 @@ private class ConvertNotesToContentNotesServiceTest {
             // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_testing_tools_runas.htm
             System.runAs( new User( id = UserInfo.getUserId() ) ) {
 
-                user2 = newUser( p2.id, null, 'Beta',  'User 2', 'user_2@example.com' );
+                user2 = ConvertNotesToContentNotesTestFactory.newUser( p2.id, null, 'Beta',  'User 2', 'user_2@example.com' );
 
                 user2.contactId = cont.id;
 
@@ -149,8 +149,8 @@ private class ConvertNotesToContentNotesServiceTest {
         // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_testing_tools_runas.htm
         System.runAs( new User( id = UserInfo.getUserId() ) ) {
 
-            user1 = newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
-            user2 = newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
+            user1 = ConvertNotesToContentNotesTestFactory.newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
+            user2 = ConvertNotesToContentNotesTestFactory.newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
 
             insert new List<User>{ user1, user2 };
 
@@ -264,8 +264,8 @@ private class ConvertNotesToContentNotesServiceTest {
         // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_testing_tools_runas.htm
         System.runAs( new User( id = UserInfo.getUserId() ) ) {
 
-            user1 = newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
-            user2 = newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
+            user1 = ConvertNotesToContentNotesTestFactory.newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
+            user2 = ConvertNotesToContentNotesTestFactory.newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
 
             insert new List<User>{ user1, user2 };
 
@@ -385,8 +385,8 @@ private class ConvertNotesToContentNotesServiceTest {
         // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_testing_tools_runas.htm
         System.runAs( new User( id = UserInfo.getUserId() ) ) {
 
-            user1 = newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
-            user2 = newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
+            user1 = ConvertNotesToContentNotesTestFactory.newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
+            user2 = ConvertNotesToContentNotesTestFactory.newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
 
             insert new List<User>{ user1, user2 };
 
@@ -452,8 +452,8 @@ private class ConvertNotesToContentNotesServiceTest {
         // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_testing_tools_runas.htm
         System.runAs( new User( id = UserInfo.getUserId() ) ) {
 
-            user1 = newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
-            user2 = newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
+            user1 = ConvertNotesToContentNotesTestFactory.newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
+            user2 = ConvertNotesToContentNotesTestFactory.newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
 
             insert new List<User>{ user1, user2 };
 
@@ -540,8 +540,8 @@ private class ConvertNotesToContentNotesServiceTest {
         // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_testing_tools_runas.htm
         System.runAs( new User( id = UserInfo.getUserId() ) ) {
 
-            user1 = newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
-            user2 = newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
+            user1 = ConvertNotesToContentNotesTestFactory.newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
+            user2 = ConvertNotesToContentNotesTestFactory.newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
 
             insert new List<User>{ user1, user2 };
 
@@ -631,8 +631,8 @@ private class ConvertNotesToContentNotesServiceTest {
         // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_testing_tools_runas.htm
         System.runAs( new User( id = UserInfo.getUserId() ) ) {
 
-            user1 = newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
-            user2 = newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
+            user1 = ConvertNotesToContentNotesTestFactory.newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
+            user2 = ConvertNotesToContentNotesTestFactory.newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
 
             insert new List<User>{ user1, user2 };
 
@@ -717,8 +717,8 @@ private class ConvertNotesToContentNotesServiceTest {
         // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_testing_tools_runas.htm
         System.runAs( new User( id = UserInfo.getUserId() ) ) {
 
-            user1 = newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
-            user2 = newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
+            user1 = ConvertNotesToContentNotesTestFactory.newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
+            user2 = ConvertNotesToContentNotesTestFactory.newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
 
             insert new List<User>{ user1, user2 };
 
@@ -803,8 +803,8 @@ private class ConvertNotesToContentNotesServiceTest {
         // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_testing_tools_runas.htm
         System.runAs( new User( id = UserInfo.getUserId() ) ) {
 
-            user1 = newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
-            user2 = newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
+            user1 = ConvertNotesToContentNotesTestFactory.newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
+            user2 = ConvertNotesToContentNotesTestFactory.newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
 
             insert new List<User>{ user1, user2 };
 
@@ -901,24 +901,6 @@ private class ConvertNotesToContentNotesServiceTest {
         System.assertEquals( settings.Convert_Private_Notes__c, options.convertPrivateNotes );
         System.assertEquals( settings.Share_Private_Notes__c, options.sharePrivateNotesWithParentRecord );
 
-    }
-
-    private static User newUser( ID profileId, ID roleId, String firstName, String lastName, String email ) {
-        Integer rand = Math.round( Math.random() * 1000 );
-        return new User(
-            isActive = true,
-            profileId = profileId,
-            userRoleId = roleId,
-            alias = firstName.substring(0,1) + lastName.substring(1,5),
-            firstName = firstName,
-            lastName = lastName,
-            email = email,
-            username = rand + email,
-            emailEncodingKey = 'UTF-8',
-            languageLocaleKey = 'en_US',
-            localeSidKey = 'en_US',
-            timeZoneSidKey = 'America/Chicago'
-        );
     }
 
 }
