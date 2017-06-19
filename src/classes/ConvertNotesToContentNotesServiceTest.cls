@@ -412,17 +412,21 @@ private class ConvertNotesToContentNotesServiceTest {
 
         Test.stopTest();
 
-        ContentVersion cv = [ SELECT id, contentDocumentId FROM ContentVersion WHERE original_record_id__c = :note.id AND isLatest = true ];
-        System.assert( cv != null );
+        System.runAs( user1 ) {
 
-        ContentDocumentLink cdl = [ SELECT id, linkedEntityId FROM ContentDocumentLink WHERE contentDocumentId = :cv.contentDocumentId AND linkedEntityId = :account.id ];
-        System.assert( cdl != null );
+            ContentVersion cv = [ SELECT id, contentDocumentId FROM ContentVersion WHERE original_record_id__c = :note.id AND isLatest = true ];
+            System.assert( cv != null );
 
-        ContentNote cn = [ SELECT id, latestPublishedVersionId FROM ContentNote WHERE latestPublishedVersionId = :cv.id ];
-        System.assert( cn != null );
+            ContentDocumentLink cdl = [ SELECT id, linkedEntityId FROM ContentDocumentLink WHERE contentDocumentId = :cv.contentDocumentId AND linkedEntityId = :account.id ];
+            System.assert( cdl != null );
 
-        List<Note> notes = new List<Note>([ SELECT id FROM Note WHERE id = :note.id ]);
-        System.assertEquals( 1, notes.size() );
+            ContentNote cn = [ SELECT id, latestPublishedVersionId FROM ContentNote WHERE latestPublishedVersionId = :cv.id ];
+            System.assert( cn != null );
+
+            List<Note> notes = new List<Note>([ SELECT id FROM Note WHERE id = :note.id ]);
+            System.assertEquals( 1, notes.size() );
+
+        }
 
     }
 
