@@ -92,6 +92,18 @@
         <type>DateTime</type>
     </fields>
     <fields>
+        <fullName>Original_Record_ID__c</fullName>
+        <description>If the log message is about a specific conversion issue with a record then this is the original Note ID.</description>
+        <externalId>false</externalId>
+        <inlineHelpText>If the log message is about a specific conversion issue with a record then this is the original Note ID.</inlineHelpText>
+        <label>Original Record ID</label>
+        <length>255</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
         <fullName>Summary__c</fullName>
         <externalId>false</externalId>
         <label>Summary</label>

@@ -26,6 +26,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>Convert_Notes_to_ContentNotes_Log__c.Original_Record_ID__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>Convert_Notes_to_ContentNotes_Log__c.Summary__c</field>
         <readable>true</readable>
     </fieldPermissions>
