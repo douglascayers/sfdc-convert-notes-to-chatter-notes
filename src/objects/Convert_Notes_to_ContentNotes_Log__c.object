@@ -116,11 +116,11 @@
         <unique>false</unique>
     </fields>
     <fields>
-        <fullName>Severity__c</fullName>
-        <description>Indicates the type of log message, whether a note was successfully converted or perhaps that it was skipped during conversion or that it failed conversion.</description>
+        <fullName>Status__c</fullName>
+        <description>Indicates the status of log message, whether a note was successfully converted or perhaps that it was skipped during conversion or that it failed conversion. The API values match conversion result enum value in apex code.</description>
         <externalId>false</externalId>
-        <inlineHelpText>Indicates the type of log message, whether a note was successfully converted or perhaps that it was skipped during conversion or that it failed conversion.</inlineHelpText>
-        <label>Severity</label>
+        <inlineHelpText>Indicates the status of log message, whether a note was successfully converted or perhaps that it was skipped during conversion or that it failed conversion.</inlineHelpText>
+        <label>Status</label>
         <required>false</required>
         <trackTrending>false</trackTrending>
         <type>Picklist</type>
@@ -129,22 +129,17 @@
             <valueSetDefinition>
                 <sorted>false</sorted>
                 <value>
-                    <fullName>Success</fullName>
+                    <fullName>CONVERTED</fullName>
                     <default>true</default>
-                    <label>Success</label>
+                    <label>Converted</label>
                 </value>
                 <value>
-                    <fullName>Info</fullName>
+                    <fullName>SKIPPED</fullName>
                     <default>false</default>
-                    <label>Info</label>
+                    <label>Skipped</label>
                 </value>
                 <value>
-                    <fullName>Warning</fullName>
-                    <default>false</default>
-                    <label>Warning</label>
-                </value>
-                <value>
-                    <fullName>Error</fullName>
+                    <fullName>ERROR</fullName>
                     <default>false</default>
                     <label>Error</label>
                 </value>
