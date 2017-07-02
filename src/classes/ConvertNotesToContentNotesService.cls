@@ -35,21 +35,44 @@ public without sharing class ConvertNotesToContentNotesService {
     public List<ConversionResult> convert( List<Note> notes ) {
 
         // identify if any of these notes have already been converted
-        Set<ID> alreadyConvertedNoteIds = filterAlreadyConvertedNoteIds( notes );
+        Map<ID, ID> alreadyConvertedNoteIdsMap = getAlreadyConvertedNoteIdsMap( notes );
 
-        List<ConversionResult> conversionResults = new List<ConversionResult>();
+        // map of old note id to conversion result
+        Map<ID, ConversionResult> conversionResultsMap = new Map<ID, ConversionResult>();
+
+        // the new notes to try and save
         List<ContentVersion> contentNotes = new List<ContentVersion>();
 
         for ( Note oldNote : notes ) {
 
             // skip if we've already converted this record before
-            if ( alreadyConvertedNoteIds.contains( oldNote.id ) ) {
+            if ( alreadyConvertedNoteIdsMap.containsKey( oldNote.id ) ) {
+
+                ConversionResult conversionResult = new ConversionResult();
+                conversionResult.status = ConversionResultStatus.SKIPPED;
+                conversionResult.oldNote = oldNote;
+                conversionResult.contentNoteId = alreadyConvertedNoteIdsMap.get( oldNote.id );
+                conversionResult.message = 'Already converted.';
+
+                conversionResultsMap.put( oldNote.id, conversionResult );
+
                 continue;
+
             }
 
             // skip if we're not converting private notes
             if ( oldNote.IsPrivate && !this.options.convertPrivateNotes ) {
+
+                ConversionResult conversionResult = new ConversionResult();
+                conversionResult.status = ConversionResultStatus.SKIPPED;
+                conversionResult.oldNote = oldNote;
+                conversionResult.contentNoteId = null;
+                conversionResult.message = 'Conversion Settings are set to not convert private notes.';
+
+                conversionResultsMap.put( oldNote.id, conversionResult );
+
                 continue;
+
             }
 
             // per Salesforce we must escape certain special characters
@@ -100,51 +123,68 @@ public without sharing class ConvertNotesToContentNotesService {
 
         if ( contentNotes.size() > 0 ) {
 
-            Database.DMLOptions dmo = new Database.DMLOptions();
-            dmo.optAllOrNone = false;
+            SavePoint sp = Database.setSavepoint();
 
-            List<Database.SaveResult> saveResults = Database.insert( contentNotes, dmo );
+            try {
 
-            for ( Integer i = 0; i < saveResults.size(); i++ ) {
+                Database.DMLOptions dmo = new Database.DMLOptions();
+                dmo.optAllOrNone = false;
 
-                Database.SaveResult saveResult = saveResults[i];
+                List<Database.SaveResult> saveResults = Database.insert( contentNotes, dmo );
 
-                Note oldNote = notes[i];
+                for ( Integer i = 0; i < saveResults.size(); i++ ) {
 
-                ConversionResult conversionResult = new ConversionResult();
-                conversionResult.success = saveResult.isSuccess();
-                conversionResult.contentNoteId = saveResult.getId();
-                conversionResult.oldNote = oldNote;
+                    Database.SaveResult saveResult = saveResults[i];
 
-                if ( !saveResult.isSuccess() ) {
+                    Note oldNote = notes[i];
 
-                    List<String> messages = new List<String>();
+                    ConversionResult conversionResult = new ConversionResult();
+                    conversionResult.status = ( saveResult.isSuccess() ? ConversionResultStatus.CONVERTED : ConversionResultStatus.ERROR );
+                    conversionResult.contentNoteId = saveResult.getId();
+                    conversionResult.oldNote = oldNote;
 
-                    for ( Database.Error err : saveResult.getErrors() ) {
-                        messages.add( err.getMessage() );
+                    if ( !saveResult.isSuccess() ) {
+
+                        List<String> messages = new List<String>();
+
+                        for ( Database.Error err : saveResult.getErrors() ) {
+                            messages.add( err.getMessage() );
+                        }
+
+                        conversionResult.message = String.join( messages, ' ' );
+
                     }
 
-                    conversionResult.message = String.join( messages, ' ' );
+                    conversionResultsMap.put( oldNote.id, conversionResult );
 
                 }
 
-                conversionResults.add( conversionResult );
+                postProcessConversionResults( conversionResultsMap );
+
+            } catch ( Exception e ) {
+
+                Database.rollback( sp );
+                throw e;
 
             }
 
-            postProcessConversionResults( conversionResults );
+        }
 
+        // sort map values in same order as notes parameter
+        List<ConversionResult> conversionResults = new List<ConversionResult>();
+        for ( Note oldNote : notes ) {
+            conversionResults.add( conversionResultsMap.get( oldNote.id ) );
         }
 
         return conversionResults;
     }
 
-    private void postProcessConversionResults( List<ConversionResult> conversionResults ) {
+    private void postProcessConversionResults( Map<ID, ConversionResult> conversionResultsMap ) {
 
         Set<ID> contentNoteIds = new Set<ID>();
 
-        for ( ConversionResult conversionResult : conversionResults ) {
-            if ( String.isNotBlank( conversionResult.contentNoteId ) ) {
+        for ( ConversionResult conversionResult : conversionResultsMap.values() ) {
+            if ( conversionResult.status == ConversionResultStatus.CONVERTED && String.isNotBlank( conversionResult.contentNoteId ) ) {
                 contentNoteIds.add( conversionResult.contentNoteId );
             }
         }
@@ -162,9 +202,9 @@ public without sharing class ConvertNotesToContentNotesService {
         List<Note> notesToDelete = new List<Note>();
         List<ContentDocumentLink> contentDocumentLinks = new List<ContentDocumentLink>();
 
-        for ( ConversionResult conversionResult : conversionResults ) {
+        for ( ConversionResult conversionResult : conversionResultsMap.values() ) {
 
-            if ( conversionResult.success ) {
+            if ( conversionResult.status == ConversionResultStatus.CONVERTED ) {
 
                 // should original note be deleted?
                 if ( this.options.deleteNotesUponConversion ) {
@@ -204,12 +244,13 @@ public without sharing class ConvertNotesToContentNotesService {
     }
 
     /**
-     * Given a list of notes then returns the sublist of those
-     * that have already been converted.
+     * Given a list of notes then returns the submap of those
+     * that have already been converted and their new note ids.
      */
-    public Set<ID> filterAlreadyConvertedNoteIds( List<Note> notes ) {
+    public Map<ID, ID> getAlreadyConvertedNoteIdsMap( List<Note> notes ) {
 
-        Set<ID> filteredNoteIds = new Set<ID>();
+        // map of old note ids to new note ids
+        Map<ID, ID> convertedNoteIdsMap = new Map<ID, ID>();
 
         Set<ID> noteIds = new Set<ID>();
         Set<ID> parentIds = new Set<ID>();
@@ -221,6 +262,7 @@ public without sharing class ConvertNotesToContentNotesService {
 
         for ( List<ContentDocumentLink> links : [
             SELECT
+                contentDocument.latestPublishedVersionId,
                 contentDocument.latestPublishedVersion.original_record_id__c
             FROM
                 ContentDocumentLink
@@ -235,7 +277,7 @@ public without sharing class ConvertNotesToContentNotesService {
                 if ( link.contentDocument != null && link.contentDocument.latestPublishedVersion != null ) {
 
                     if ( noteIds.contains( link.contentDocument.latestPublishedVersion.original_record_id__c ) ) {
-                        filteredNoteIds.add( link.contentDocument.latestPublishedVersion.original_record_id__c );
+                        convertedNoteIdsMap.put( link.contentDocument.latestPublishedVersion.original_record_id__c, link.contentDocument.latestPublishedVersionId );
                     }
 
                 }
@@ -244,28 +286,31 @@ public without sharing class ConvertNotesToContentNotesService {
 
         }
 
-        return filteredNoteIds;
+        return convertedNoteIdsMap;
     }
 
     public class ConversionResult {
 
-        // true if note was converted; false otherwise
-        public Boolean success { get; set; }
+        // was conversion success? skipped? error?
+        public ConversionResultStatus status { get; set; }
 
-        // the original note to convert
+        // the old note to convert
         public Note oldNote { get; set; }
 
-        // id of the converted note, if successful, null otherwise
+        // id of the newly converted note if conversion success
         public ID contentNoteId { get; set; }
 
-        // if not successful then the error message
+        // any pertinent message
         public String message { get; set; }
 
         public ConversionResult() {
-            this.success = false;
             this.message = '';
         }
 
+    }
+
+    public enum ConversionResultStatus {
+        CONVERTED, SKIPPED, ERROR
     }
 
 }

@@ -92,16 +92,64 @@
         <type>DateTime</type>
     </fields>
     <fields>
-        <fullName>Original_Record_ID__c</fullName>
-        <description>If the log message is about a specific conversion issue with a record then this is the original Note ID.</description>
+        <fullName>New_Note_ID__c</fullName>
+        <description>If the log message is about a specific conversion issue with a record then this is the Enhanced Note ID.</description>
         <externalId>false</externalId>
-        <inlineHelpText>If the log message is about a specific conversion issue with a record then this is the original Note ID.</inlineHelpText>
-        <label>Original Record ID</label>
+        <inlineHelpText>If the log message is about a specific conversion issue with a record then this is the Enhanced Note ID.</inlineHelpText>
+        <label>New Note ID</label>
         <length>255</length>
         <required>false</required>
         <trackTrending>false</trackTrending>
         <type>Text</type>
         <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Old_Note_ID__c</fullName>
+        <description>If the log message is about a specific conversion issue with a record then this is the original Note ID.</description>
+        <externalId>false</externalId>
+        <inlineHelpText>If the log message is about a specific conversion issue with a record then this is the original Note ID.</inlineHelpText>
+        <label>Old Note ID</label>
+        <length>255</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Severity__c</fullName>
+        <description>Indicates the type of log message, whether a note was successfully converted or perhaps that it was skipped during conversion or that it failed conversion.</description>
+        <externalId>false</externalId>
+        <inlineHelpText>Indicates the type of log message, whether a note was successfully converted or perhaps that it was skipped during conversion or that it failed conversion.</inlineHelpText>
+        <label>Severity</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+        <valueSet>
+            <restricted>true</restricted>
+            <valueSetDefinition>
+                <sorted>false</sorted>
+                <value>
+                    <fullName>Success</fullName>
+                    <default>true</default>
+                    <label>Success</label>
+                </value>
+                <value>
+                    <fullName>Info</fullName>
+                    <default>false</default>
+                    <label>Info</label>
+                </value>
+                <value>
+                    <fullName>Warning</fullName>
+                    <default>false</default>
+                    <label>Warning</label>
+                </value>
+                <value>
+                    <fullName>Error</fullName>
+                    <default>false</default>
+                    <label>Error</label>
+                </value>
+            </valueSetDefinition>
+        </valueSet>
     </fields>
     <fields>
         <fullName>Summary__c</fullName>

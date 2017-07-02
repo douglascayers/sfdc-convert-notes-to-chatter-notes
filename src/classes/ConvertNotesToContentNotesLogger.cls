@@ -16,6 +16,7 @@ public with sharing class ConvertNotesToContentNotesLogger {
 
         Convert_Notes_to_ContentNotes_Log__c log = new Convert_Notes_to_ContentNotes_Log__c(
             job_id__c = jobId,
+            status__c = 'ERROR',
             summary__c = e.getMessage(),
             detail__c = e.getStackTraceString()
         );
@@ -37,18 +38,19 @@ public with sharing class ConvertNotesToContentNotesLogger {
 
         for ( ConvertNotesToContentNotesService.ConversionResult result : results ) {
 
-            if ( !result.success ) {
+            System.debug(
+                getLoggingLevelFromSeverity( result.status ),
+                'jobId: ' + jobId + ', message: ' + result.message
+            );
 
-                System.debug( LoggingLevel.ERROR, 'jobId: ' + jobId + ', error: ' + result.message );
-
-                logs.add( new Convert_Notes_to_ContentNotes_Log__c(
-                    job_id__c = jobId,
-                    original_record_id__c = ( result.oldNote != null ? result.oldNote.id : null ),
-                    summary__c = result.message.abbreviate( maxLength ),
-                    detail__c = result.message
-                ));
-
-            }
+            logs.add( new Convert_Notes_to_ContentNotes_Log__c(
+                job_id__c = jobId,
+                status__c = String.valueOf( result.status ),
+                old_note_id__c = ( result.oldNote != null ? result.oldNote.id : null ),
+                new_note_id__c = result.contentNoteId,
+                summary__c = result.message.abbreviate( maxLength ),
+                detail__c = result.message
+            ));
 
         }
 
@@ -57,6 +59,21 @@ public with sharing class ConvertNotesToContentNotesLogger {
         }
 
     }
+
+    private static LoggingLevel getLoggingLevelFromSeverity( ConvertNotesToContentNotesService.ConversionResultStatus status ) {
+
+        LoggingLevel level = LoggingLevel.DEBUG;
+
+        if ( status == ConvertNotesToContentNotesService.ConversionResultStatus.SKIPPED ) {
+            level = LoggingLevel.WARN;
+        } else if ( status == ConvertNotesToContentNotesService.ConversionResultStatus.ERROR ) {
+            level = LoggingLevel.ERROR;
+        }
+
+        return level;
+    }
+
+    // --------------------------------------------------------------------
 
     /**
      * Checks if any log records have been created since the job started.
@@ -76,7 +93,7 @@ public with sharing class ConvertNotesToContentNotesLogger {
      */
     public static void sendApexExceptionEmailIfAnyErrorsSince( DateTime sinceDateTime ) {
 
-        Integer count = [ SELECT count() FROM Convert_Notes_to_ContentNotes_Log__c WHERE createdDate >= :sinceDateTime ];
+        Integer count = [ SELECT count() FROM Convert_Notes_to_ContentNotes_Log__c WHERE createdDate >= :sinceDateTime AND status__c = 'ERROR' ];
 
         if ( count > 0 ) {
 
