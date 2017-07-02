@@ -53,6 +53,7 @@
     <description>When deployed as a managed package then users cannot see errors logged to the Debug Log. This object stores any errors and messages the Adminsitrator may need to know about when troubleshooting conversion issues. You may delete these records after you have reviewed them.</description>
     <enableActivities>false</enableActivities>
     <enableBulkApi>true</enableBulkApi>
+    <enableChangeDataCapture>false</enableChangeDataCapture>
     <enableFeeds>false</enableFeeds>
     <enableHistory>false</enableHistory>
     <enableReports>true</enableReports>
@@ -122,8 +123,8 @@
         <customTabListAdditionalFields>Detail__c</customTabListAdditionalFields>
         <customTabListAdditionalFields>Log_Time__c</customTabListAdditionalFields>
         <excludedStandardButtons>New</excludedStandardButtons>
-        <excludedStandardButtons>ChangeOwner</excludedStandardButtons>
         <excludedStandardButtons>Accept</excludedStandardButtons>
+        <excludedStandardButtons>ChangeOwner</excludedStandardButtons>
         <lookupDialogsAdditionalFields>Summary__c</lookupDialogsAdditionalFields>
         <lookupDialogsAdditionalFields>Detail__c</lookupDialogsAdditionalFields>
         <lookupDialogsAdditionalFields>Log_Time__c</lookupDialogsAdditionalFields>
