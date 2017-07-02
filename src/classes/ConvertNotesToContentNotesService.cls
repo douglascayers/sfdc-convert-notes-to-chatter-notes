@@ -32,18 +32,20 @@ public without sharing class ConvertNotesToContentNotesService {
      *  - LastModifiedById
      *  - LastModifiedDate
      */
-    public List<ConversionResult> convert( List<Note> notes ) {
+    public List<ConversionResult> convert( List<Note> oldNotes ) {
 
         // identify if any of these notes have already been converted
-        Map<ID, ID> alreadyConvertedNoteIdsMap = getAlreadyConvertedNoteIdsMap( notes );
+        Map<ID, ID> alreadyConvertedNoteIdsMap = getAlreadyConvertedNoteIdsMap( oldNotes );
+
+        Map<ID, Note> oldNotesMap = new Map<ID, Note>( oldNotes );
 
         // map of old note id to conversion result
         Map<ID, ConversionResult> conversionResultsMap = new Map<ID, ConversionResult>();
 
         // the new notes to try and save
-        List<ContentVersion> contentNotes = new List<ContentVersion>();
+        List<ContentVersion> newNoteVersions = new List<ContentVersion>();
 
-        for ( Note oldNote : notes ) {
+        for ( Note oldNote : oldNotes ) {
 
             // skip if we've already converted this record before
             if ( alreadyConvertedNoteIdsMap.containsKey( oldNote.id ) ) {
@@ -100,7 +102,7 @@ public without sharing class ConvertNotesToContentNotesService {
             // If they do not match then we get error:
             // "Documents in a user's private library must always be owned by that user."
 
-            ContentVersion newNote = new ContentVersion(
+            ContentVersion newNoteVersion = new ContentVersion(
                 // data fields
                 title = oldNote.title,
                 versionData = Blob.valueOf( noteBody ),
@@ -117,11 +119,11 @@ public without sharing class ConvertNotesToContentNotesService {
                 lastModifiedDate = oldNote.lastModifiedDate
             );
 
-            contentNotes.add( newNote );
+            newNoteVersions.add( newNoteVersion );
 
         }
 
-        if ( contentNotes.size() > 0 ) {
+        if ( newNoteVersions.size() > 0 ) {
 
             SavePoint sp = Database.setSavepoint();
 
@@ -130,13 +132,13 @@ public without sharing class ConvertNotesToContentNotesService {
                 Database.DMLOptions dmo = new Database.DMLOptions();
                 dmo.optAllOrNone = false;
 
-                List<Database.SaveResult> saveResults = Database.insert( contentNotes, dmo );
+                List<Database.SaveResult> saveResults = Database.insert( newNoteVersions, dmo );
 
                 for ( Integer i = 0; i < saveResults.size(); i++ ) {
 
                     Database.SaveResult saveResult = saveResults[i];
 
-                    Note oldNote = notes[i];
+                    Note oldNote = oldNotesMap.get( newNoteVersions[i].original_record_id__c );
 
                     ConversionResult conversionResult = new ConversionResult();
                     conversionResult.status = ( saveResult.isSuccess() ? ConversionResultStatus.CONVERTED : ConversionResultStatus.ERROR );
@@ -172,7 +174,7 @@ public without sharing class ConvertNotesToContentNotesService {
 
         // sort map values in same order as notes parameter
         List<ConversionResult> conversionResults = new List<ConversionResult>();
-        for ( Note oldNote : notes ) {
+        for ( Note oldNote : oldNotes ) {
             conversionResults.add( conversionResultsMap.get( oldNote.id ) );
         }
 
