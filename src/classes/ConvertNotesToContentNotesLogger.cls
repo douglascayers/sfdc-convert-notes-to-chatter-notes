@@ -43,6 +43,7 @@ public with sharing class ConvertNotesToContentNotesLogger {
 
                 logs.add( new Convert_Notes_to_ContentNotes_Log__c(
                     job_id__c = jobId,
+                    original_record_id__c = ( result.oldNote != null ? result.oldNote.id : null ),
                     summary__c = result.message.abbreviate( maxLength ),
                     detail__c = result.message
                 ));

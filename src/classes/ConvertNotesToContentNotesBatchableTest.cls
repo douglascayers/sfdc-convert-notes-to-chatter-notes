@@ -251,7 +251,7 @@ private class ConvertNotesToContentNotesBatchableTest {
     }
 
     @isTest
-    static void test_fail_preserve_original_inactive_owner() {
+    static void test_preserve_original_inactive_owner() {
 
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
         settings.Share_Type__c = 'I';
@@ -329,9 +329,11 @@ private class ConvertNotesToContentNotesBatchableTest {
             System.debug( log );
         }
 
-        System.assertEquals( 1, [ SELECT count() FROM Convert_Notes_to_ContentNotes_Log__c ] );
-        System.assertEquals( 0, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct.id ] );
-        System.assertEquals( 2, [ SELECT count() FROM Note ] );
+        System.assertEquals( 0, [ SELECT count() FROM Convert_Notes_to_ContentNotes_Log__c ] );
+        System.assertEquals( 2, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct.id ] );
+        System.assertEquals( 1, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct.id AND contentDocument.ownerId = :user1.id ] );
+        System.assertEquals( 1, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct.id AND contentDocument.ownerId = :user2.id ] );
+        System.assertEquals( 0, [ SELECT count() FROM Note ] );
 
     }
 
