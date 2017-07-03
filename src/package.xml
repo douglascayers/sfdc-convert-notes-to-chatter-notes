@@ -63,7 +63,6 @@
         <name>CustomField</name>
     </types>
     <types>
-        <members>ContentVersion</members>
         <members>Convert_Notes_to_ContentNotes_Log__c</members>
         <members>Convert_Notes_to_ContentNotes_Settings__c</members>
         <name>CustomObject</name>
