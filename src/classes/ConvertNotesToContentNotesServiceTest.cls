@@ -93,8 +93,10 @@ private class ConvertNotesToContentNotesServiceTest {
 
             Test.stopTest();
 
+            Set<ID> entityIds = new Set<ID>{ acct.id, cont.id };
+
             // must do assert after stopping test because of async code
-            System.assertEquals( 2, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId IN ( :acct.id, :cont.id ) ] );
+            System.assertEquals( 2, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId IN :entityIds ] );
 
             System.runAs( user2 ) {
 
@@ -121,7 +123,7 @@ private class ConvertNotesToContentNotesServiceTest {
                 }
 
                 System.assertEquals( notes.size(), results.size() );
-                System.assertEquals( 2, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId IN ( :acct.id, :cont.id ) ] );
+                System.assertEquals( 2, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId IN :entityIds ] );
 
             }
 
@@ -256,7 +258,9 @@ private class ConvertNotesToContentNotesServiceTest {
 
         Test.stopTest();
 
-        System.assertEquals( 2, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId IN ( :acct.id, :cont.id ) ] );
+        Set<ID> entityIds = new Set<ID>{ acct.id, cont.id };
+
+        System.assertEquals( 2, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId IN :entityIds ] );
         System.assertEquals( 1, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct.id AND contentDocument.ownerId = :user1.id ] );
         System.assertEquals( 1, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct.id AND contentDocument.ownerId = :user2.id ] );
 
@@ -1036,7 +1040,9 @@ private class ConvertNotesToContentNotesServiceTest {
 
         Test.stopTest();
 
-        System.assertEquals( 0, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId IN ( :acct.id, :cont.id ) ] );
+        Set<ID> entityIds = new Set<ID>{ acct.id, cont.id };
+
+        System.assertEquals( 0, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId IN :entityIds ] );
 
     }
 
