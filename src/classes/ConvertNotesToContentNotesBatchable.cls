@@ -6,7 +6,7 @@
  *
  * Actual conversion for each batch execution is delegated to ConvertNotesToContentNotesService.
  */
-public with sharing class ConvertNotesToContentNotesBatchable implements Database.Batchable<SObject>, Database.Stateful {
+global with sharing class ConvertNotesToContentNotesBatchable implements Database.Batchable<SObject>, Database.Stateful {
 
     @TestVisible
     private List<ConvertNotesToContentNotesService.ConversionResult> mockResults { get; set; }
@@ -19,10 +19,11 @@ public with sharing class ConvertNotesToContentNotesBatchable implements Databas
     @TestVisible
     private ConvertNotesToContentNotesOptions options { get; set; }
 
-    public ConvertNotesToContentNotesBatchable() {
+    global ConvertNotesToContentNotesBatchable() {
         this( new ConvertNotesToContentNotesOptions() );
     }
 
+    // not exposed to subscriber orgs, want users to configure the custom setting
     public ConvertNotesToContentNotesBatchable( ConvertNotesToContentNotesOptions options ) {
         this.options = options;
     }
