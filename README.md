@@ -28,7 +28,7 @@ Additional Background:
 * [ContentNote Documentation](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_contentnote.htm)
 
 
-Idea Exchange
+Related Ideas
 -------------
 * [Need to retain original createdDate and time on notes when importing](https://success.salesforce.com/ideaView?id=08730000000BrSsAAK)
 * [Ability to Default Sharing Settings on New Notes (Content Note)](https://success.salesforce.com/ideaView?id=0873A000000E2a6QAC)
@@ -51,9 +51,18 @@ Pre-Requisites
 Packaged Release History
 ------------------------
 
-Release 1.0 (latest)
+Release 1.1 (latest)
 -----------
-* Install package (coming soon)
+* Install package
+  * [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tf4000000hqFf)
+  * [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tf4000000hqFf)
+* Adds [Ability to Report on Conversions](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/7)
+* Adds [Schedulable, Batchable, Queueable classes now 'global'](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/8)
+* Fixes [Tests fail if no Partner Community enabled in org](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/6)
+
+Release 1.0
+-----------
+* Initial release
 
 Installing the Source Code (Developers)
 ---------------------------------------
