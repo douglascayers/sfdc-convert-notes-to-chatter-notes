@@ -112,7 +112,7 @@ private class ConvertNotesToContentNotesBatchableTest {
         Test.stopTest();
 
         for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT summary__c, detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
-            System.assert( false, log.summary__c + ' : ' + log.detail__c );
+            System.debug( log );
         }
 
         System.assertEquals( 1, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct1.id ] );
@@ -202,8 +202,8 @@ private class ConvertNotesToContentNotesBatchableTest {
 
         Test.stopTest();
 
-        for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT summary__c, detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
-            System.assert( false, log.summary__c + ' : ' + log.detail__c );
+        for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT status__c, old_note_id__c, new_note_id__c, summary__c, detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
+            System.debug( log );
         }
 
         ContentDocumentLink cdl_note1 = [
@@ -251,7 +251,7 @@ private class ConvertNotesToContentNotesBatchableTest {
     }
 
     @isTest
-    static void test_fail_preserve_original_inactive_owner() {
+    static void test_preserve_original_inactive_owner() {
 
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
         settings.Share_Type__c = 'I';
@@ -325,13 +325,15 @@ private class ConvertNotesToContentNotesBatchableTest {
 
         Test.stopTest();
 
-        for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT summary__c, detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
+        for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT status__c, old_note_id__c, new_note_id__c, summary__c, detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
             System.debug( log );
         }
 
-        System.assertEquals( 1, [ SELECT count() FROM Convert_Notes_to_ContentNotes_Log__c ] );
-        System.assertEquals( 0, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct.id ] );
-        System.assertEquals( 2, [ SELECT count() FROM Note ] );
+        System.assertEquals( 2, [ SELECT count() FROM Convert_Notes_to_ContentNotes_Log__c ] );
+        System.assertEquals( 2, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct.id ] );
+        System.assertEquals( 1, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct.id AND contentDocument.ownerId = :user1.id ] );
+        System.assertEquals( 1, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct.id AND contentDocument.ownerId = :user2.id ] );
+        System.assertEquals( 0, [ SELECT count() FROM Note ] );
 
     }
 
@@ -365,7 +367,7 @@ private class ConvertNotesToContentNotesBatchableTest {
         Test.startTest();
 
         ConvertNotesToContentNotesService.ConversionResult mockResult = new ConvertNotesToContentNotesService.ConversionResult();
-        mockResult.success = false;
+        mockResult.status = ConvertNotesToContentNotesService.ConversionResultStatus.ERROR;
         mockResult.message = 'Mock Error Result';
 
         ConvertNotesToContentNotesOptions options = new ConvertNotesToContentNotesOptions( settings );
@@ -378,7 +380,7 @@ private class ConvertNotesToContentNotesBatchableTest {
 
         Test.stopTest();
 
-        for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT summary__c, detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
+        for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT status__c, old_note_id__c, new_note_id__c, summary__c, detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
             System.debug( log );
         }
 
@@ -425,7 +427,7 @@ private class ConvertNotesToContentNotesBatchableTest {
 
         Test.stopTest();
 
-        for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT summary__c, detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
+        for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT status__c, old_note_id__c, new_note_id__c, summary__c, detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
             System.debug( log );
         }
 

@@ -6,7 +6,7 @@
  *
  * Actual conversion for the execution is delegated to ConvertNotesToContentNotesService.
  */
-public with sharing class ConvertNotesToContentNotesQueueable implements Queueable {
+global with sharing class ConvertNotesToContentNotesQueueable implements Queueable {
 
     @TestVisible
     private List<ConvertNotesToContentNotesService.ConversionResult> mockResults { get; set; }
@@ -20,10 +20,11 @@ public with sharing class ConvertNotesToContentNotesQueueable implements Queueab
 
     private Set<ID> noteIds { get; set; }
 
-    public ConvertNotesToContentNotesQueueable( Set<ID> noteIds ) {
+    global ConvertNotesToContentNotesQueueable( Set<ID> noteIds ) {
         this( noteIds, new ConvertNotesToContentNotesOptions() );
     }
 
+    // not exposed to subscriber orgs, want users to configure the custom setting
     public ConvertNotesToContentNotesQueueable( Set<ID> noteIds, ConvertNotesToContentNotesOptions options ) {
         this.noteIds = noteIds;
         this.options = options;

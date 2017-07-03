@@ -2,8 +2,12 @@
  * Developed by Doug Ayers (douglascayers.com)
  *
  * Work horse that does the actual note to content note conversion.
+ *
+ * Uses 'without sharing' to ensure can perform SOQL queries on
+ * existing ContentVersions and ContentDocumentLinks to know if
+ * a Note has already been converted or not.
  */
-public with sharing class ConvertNotesToContentNotesService {
+public without sharing class ConvertNotesToContentNotesService {
 
     private ConvertNotesToContentNotesOptions options { get; set; }
 
@@ -28,36 +32,55 @@ public with sharing class ConvertNotesToContentNotesService {
      *  - LastModifiedById
      *  - LastModifiedDate
      */
-    public List<ConversionResult> convert( List<Note> notes ) {
-
-        // noteId ==> conversion result
-        // as a map for easy retrieval throughout the various steps doing the conversion
-        // and creation of content document links to share new content note with parent record.
-        // we update the message field on the result occasionally in subsequent steps
-        Map<ID, ConversionResult> conversionResultsMap = new Map<ID, ConversionResult>();
+    public List<ConversionResult> convert( List<Note> oldNotes ) {
 
         // identify if any of these notes have already been converted
-        Set<ID> alreadyConvertedNoteIds = filterAlreadyConvertedNoteIds( notes );
+        Map<ID, ID> alreadyConvertedNoteIdsMap = getAlreadyConvertedNoteIdsMap( oldNotes );
 
-        /*
-         * Step 1
-         * Convert Notes to ContentNotes
-         */
+        Map<ID, Note> oldNotesMap = new Map<ID, Note>( oldNotes );
 
-        List<ConversionRequest> conversionRequests = new List<ConversionRequest>();
-        List<ContentNote> contentNotes = new List<ContentNote>();
+        // map of old note id to conversion result
+        Map<ID, ConversionResult> conversionResultsMap = new Map<ID, ConversionResult>();
 
-        for ( Note note : notes ) {
+        // the new notes to try and save
+        List<ContentVersion> newNoteVersions = new List<ContentVersion>();
+
+        for ( Note oldNote : oldNotes ) {
 
             // skip if we've already converted this record before
-            if ( alreadyConvertedNoteIds.contains( note.id ) ) {
+            if ( alreadyConvertedNoteIdsMap.containsKey( oldNote.id ) ) {
+
+                ConversionResult conversionResult = new ConversionResult();
+                conversionResult.status = ConversionResultStatus.SKIPPED;
+                conversionResult.oldNote = oldNote;
+                conversionResult.contentNoteId = alreadyConvertedNoteIdsMap.get( oldNote.id );
+                conversionResult.message = 'Already converted.';
+
+                conversionResultsMap.put( oldNote.id, conversionResult );
+
                 continue;
+
+            }
+
+            // skip if we're not converting private notes
+            if ( oldNote.IsPrivate && !this.options.convertPrivateNotes ) {
+
+                ConversionResult conversionResult = new ConversionResult();
+                conversionResult.status = ConversionResultStatus.SKIPPED;
+                conversionResult.oldNote = oldNote;
+                conversionResult.contentNoteId = null;
+                conversionResult.message = 'Conversion Settings are set to not convert private notes.';
+
+                conversionResultsMap.put( oldNote.id, conversionResult );
+
+                continue;
+
             }
 
             // per Salesforce we must escape certain special characters
             // logic inspired by David Reed (http://www.ktema.org//2016/08/24/importing-notes-into-salesforce/)
             // https://help.salesforce.com/apex/HTViewSolution?id=000230867&language=en_US
-            String noteBody = ( ( note.body == null ) ? '' : note.body )
+            String noteBody = ( ( oldNote.body == null ) ? '' : oldNote.body )
                 .escapeXml()
                 .replace('\r\n', '<br>')
                 .replace('\r', '<br>')
@@ -65,155 +88,171 @@ public with sharing class ConvertNotesToContentNotesService {
                 .replace('&apos;', '&#39;')
             ;
 
+            // content version cannot have a null or empty string body
+            // so set to empty paragraph which will appear as blank note.
+            // we do this after escaping the original note body otherwise
+            // the <p> tag would get escaped, doh!
+            if ( String.isBlank( noteBody ) ) {
+                noteBody = '<p></p>';
+            }
+
             // We set the owner of the new content note to be the
             // same as the note's creator because both fields
             // must have same value to insert the content note.
             // If they do not match then we get error:
             // "Documents in a user's private library must always be owned by that user."
 
-            ContentNote newNote = new ContentNote(
+            ContentVersion newNoteVersion = new ContentVersion(
                 // data fields
-                title = note.title,
-                content = Blob.valueOf( noteBody ),
+                title = oldNote.title,
+                versionData = Blob.valueOf( noteBody ),
+                pathOnClient = oldNote.title + '.snote',
+                // custom fields for history tracking and conversion purposes
+                original_record_id__c = oldNote.id,
+                original_record_parent_id__c = oldNote.parentId,
+                original_record_owner_id__c = oldNote.ownerId,
                 // audit fields
-                ownerId = note.ownerId, // system requirement, owner and creator must be the same
-                createdById = note.ownerId,
-                createdDate = note.createdDate,
-                lastModifiedById = note.lastModifiedById,
-                lastModifiedDate = note.lastModifiedDate
+                ownerId = oldNote.ownerId, // system requirement, owner and creator must be the same
+                createdById = oldNote.ownerId,
+                createdDate = oldNote.createdDate,
+                lastModifiedById = oldNote.lastModifiedById,
+                lastModifiedDate = oldNote.lastModifiedDate
             );
 
-            contentNotes.add( newNote );
-
-            conversionRequests.add( new ConversionRequest( note, newNote ) );
+            newNoteVersions.add( newNoteVersion );
 
         }
 
-        if ( contentNotes.size() > 0 ) {
+        if ( newNoteVersions.size() > 0 ) {
 
-            insert contentNotes;
+            SavePoint sp = Database.setSavepoint();
 
-            for ( ConversionRequest request : conversionRequests ) {
+            try {
 
-                ConversionResult result = new ConversionResult();
-                result.success = true;
-                result.contentNoteId = request.newNote.id;
-                result.noteId = request.oldNote.id;
+                Database.DMLOptions dmo = new Database.DMLOptions();
+                dmo.optAllOrNone = false;
 
-                conversionResultsMap.put( request.oldNote.id, result );
+                List<Database.SaveResult> saveResults = Database.insert( newNoteVersions, dmo );
+
+                for ( Integer i = 0; i < saveResults.size(); i++ ) {
+
+                    Database.SaveResult saveResult = saveResults[i];
+
+                    Note oldNote = oldNotesMap.get( newNoteVersions[i].original_record_id__c );
+
+                    ConversionResult conversionResult = new ConversionResult();
+                    conversionResult.status = ( saveResult.isSuccess() ? ConversionResultStatus.CONVERTED : ConversionResultStatus.ERROR );
+                    conversionResult.contentNoteId = saveResult.getId();
+                    conversionResult.oldNote = oldNote;
+
+                    if ( !saveResult.isSuccess() ) {
+
+                        List<String> messages = new List<String>();
+
+                        for ( Database.Error err : saveResult.getErrors() ) {
+                            messages.add( err.getMessage() );
+                        }
+
+                        conversionResult.message = String.join( messages, ' ' );
+
+                    }
+
+                    conversionResultsMap.put( oldNote.id, conversionResult );
+
+                }
+
+                postProcessConversionResults( conversionResultsMap );
+
+            } catch ( Exception e ) {
+
+                Database.rollback( sp );
+                throw e;
 
             }
 
-            /*
-             * Step 2
-             * Requery ContentNotes to get latest published version id so that we can
-             * know the generated content document id so that we can create
-             * ContentDocumentLinks between the document and note's parent record and owner.
-             * Doing so will share the new note so it's accessible by others.
-             */
+        }
 
-            Set<ID> contentNoteIds = new Map<ID, ContentNote>( contentNotes ).keySet();
+        // sort map values in same order as notes parameter
+        List<ConversionResult> conversionResults = new List<ConversionResult>();
+        for ( Note oldNote : oldNotes ) {
+            conversionResults.add( conversionResultsMap.get( oldNote.id ) );
+        }
 
-            Map<ID, ContentDocument> contentDocumentMap = new Map<ID, ContentDocument>();
-            for ( ContentDocumentLink cdl : [
-                SELECT
-                    id,
-                    linkedEntityId,
-                    contentDocumentId,
-                    contentDocument.latestPublishedVersionId
-                FROM
-                    ContentDocumentLink
-                WHERE
-                    contentDocumentId IN :contentNoteIds
-            ]) {
-                contentDocumentMap.put( cdl.contentDocumentId, cdl.contentDocument );
+        return conversionResults;
+    }
+
+    private void postProcessConversionResults( Map<ID, ConversionResult> conversionResultsMap ) {
+
+        Set<ID> contentNoteIds = new Set<ID>();
+
+        for ( ConversionResult conversionResult : conversionResultsMap.values() ) {
+            if ( conversionResult.status == ConversionResultStatus.CONVERTED && String.isNotBlank( conversionResult.contentNoteId ) ) {
+                contentNoteIds.add( conversionResult.contentNoteId );
             }
+        }
 
-            System.assertEquals( contentNotes.size(), contentDocumentMap.size() );
+        Map<ID, ContentVersion> contentVersionMap = new Map<ID, ContentVersion>([
+            SELECT
+                id,
+                contentDocumentId
+            FROM
+                ContentVersion
+            WHERE
+                id IN :contentNoteIds
+        ]);
 
-            /*
-             * Step 3
-             * Create ContentDocumentLinks to share the new content
-             * with the same parent record as the source note.
-             * We also assign original owner to the note and stamp some tracking fields.
-             */
+        List<Note> notesToDelete = new List<Note>();
+        List<ContentDocumentLink> contentDocumentLinks = new List<ContentDocumentLink>();
 
-            List<ContentDocumentLink> contentDocumentLinks = new List<ContentDocumentLink>();
-            List<ContentVersion> contentVersions = new List<ContentVersion>();
+        for ( ConversionResult conversionResult : conversionResultsMap.values() ) {
 
-            for ( ConversionRequest request : conversionRequests ) {
+            if ( conversionResult.status == ConversionResultStatus.CONVERTED ) {
 
-                ContentDocument cd = contentDocumentMap.get( request.newNote.id );
-
-                ContentVersion cv = new ContentVersion(
-                    id = cd.latestPublishedVersionId,
-                    contentDocumentId = cd.id,
-                    // custom fields for history tracking and conversion purposes
-                    original_record_id__c = request.oldNote.id,
-                    original_record_parent_id__c = request.oldNote.parentId,
-                    original_record_owner_id__c = request.oldNote.ownerId
-                );
-
-                contentVersions.add( cv );
+                // should original note be deleted?
+                if ( this.options.deleteNotesUponConversion ) {
+                    notesToDelete.add( conversionResult.oldNote );
+                }
 
                 // should converted note be shared with parent?
-                if ( !request.oldNote.isPrivate || ( request.oldNote.isPrivate && this.options.sharePrivateNotesWithParentRecord ) ) {
+                if ( !conversionResult.oldNote.isPrivate || ( conversionResult.oldNote.isPrivate && this.options.sharePrivateNotesWithParentRecord ) ) {
 
-                    // share the new note with the same parent entity of the old note
-                    // any user with visibility to this record has visibility to this note
-                    contentDocumentLinks.add( new ContentDocumentLink(
-                        linkedEntityId = request.oldNote.parentId,
-                        contentDocumentId = cv.contentDocumentId,
-                        shareType = this.options.shareType,
-                        visibility = this.options.visibility
-                    ));
+                    ContentVersion cv = contentVersionMap.get( conversionResult.contentNoteId );
 
-                } else {
+                    if ( cv != null ) {
 
-                    String message  = 'Not creating ContentDocumentLink to share ContentDocument (' + cv.contentDocumentId + ') with Parent Record (' + request.oldNote.parentId + ') because note record (' + request.oldNote.id + ') is private. ';
-                           message += 'Either make note record not private or enable the [Share Private Notes?] option and convert again, or manually update the new document\'s sharing settings.';
+                        contentDocumentLinks.add( new ContentDocumentLink(
+                            linkedEntityId = conversionResult.oldNote.parentId,
+                            contentDocumentId = cv.contentDocumentId,
+                            shareType = this.options.shareType,
+                            visibility = this.options.visibility
+                        ));
 
-                    conversionResultsMap.get( request.oldNote.id ).message += ' ' + message;
+                    }
 
                 }
-
-            }
-
-            // apply updates to content versions
-            if ( contentVersions.size() > 0 ) {
-                update contentVersions;
-            }
-
-            // create share links between new content note and original note parent entity
-            if ( contentDocumentLinks.size() > 0 ) {
-                insert contentDocumentLinks;
-            }
-
-            // lastly, delete the original notes that were successfully converted into files
-            if ( this.options.deleteNotesUponConversion ) {
-
-                List<Note> notesToDelete = new List<Note>();
-
-                for ( ConversionRequest request : conversionRequests ) {
-                    notesToDelete.add( request.oldNote );
-                }
-
-                delete notesToDelete;
 
             }
 
         }
 
-        return conversionResultsMap.values();
+        if ( notesToDelete.size() > 0 ) {
+            delete notesToDelete;
+        }
+
+        if ( contentDocumentLinks.size() > 0 ) {
+            insert contentDocumentLinks;
+        }
+
     }
 
     /**
-     * Given a list of notes then returns the sublist of those
-     * that have already been converted.
+     * Given a list of notes then returns the submap of those
+     * that have already been converted and their new note ids.
      */
-    public Set<ID> filterAlreadyConvertedNoteIds( List<Note> notes ) {
+    public Map<ID, ID> getAlreadyConvertedNoteIdsMap( List<Note> notes ) {
 
-        Set<ID> filteredNoteIds = new Set<ID>();
+        // map of old note ids to new note ids
+        Map<ID, ID> convertedNoteIdsMap = new Map<ID, ID>();
 
         Set<ID> noteIds = new Set<ID>();
         Set<ID> parentIds = new Set<ID>();
@@ -225,6 +264,7 @@ public with sharing class ConvertNotesToContentNotesService {
 
         for ( List<ContentDocumentLink> links : [
             SELECT
+                contentDocument.latestPublishedVersionId,
                 contentDocument.latestPublishedVersion.original_record_id__c
             FROM
                 ContentDocumentLink
@@ -239,7 +279,7 @@ public with sharing class ConvertNotesToContentNotesService {
                 if ( link.contentDocument != null && link.contentDocument.latestPublishedVersion != null ) {
 
                     if ( noteIds.contains( link.contentDocument.latestPublishedVersion.original_record_id__c ) ) {
-                        filteredNoteIds.add( link.contentDocument.latestPublishedVersion.original_record_id__c );
+                        convertedNoteIdsMap.put( link.contentDocument.latestPublishedVersion.original_record_id__c, link.contentDocument.latestPublishedVersionId );
                     }
 
                 }
@@ -248,42 +288,31 @@ public with sharing class ConvertNotesToContentNotesService {
 
         }
 
-        return filteredNoteIds;
-    }
-
-    public class ConversionRequest {
-
-        public Note oldNote { get; set; }
-
-        public ContentNote newNote { get; set; }
-
-        public ConversionRequest( Note oldNote, ContentNote newNote ) {
-            this.oldNote = oldNote;
-            this.newNote = newNote;
-        }
-
+        return convertedNoteIdsMap;
     }
 
     public class ConversionResult {
 
-        // true if note was converted; false otherwise
-        public Boolean success { get; set; }
+        // was conversion success? skipped? error?
+        public ConversionResultStatus status { get; set; }
 
-        // if of the note being converted, should always be populated
-        public ID noteId { get; set; }
+        // the old note to convert
+        public Note oldNote { get; set; }
 
-        // id of the converted note, if successful, null otherwise
+        // id of the newly converted note if conversion success
         public ID contentNoteId { get; set; }
 
-        // if not successful then the error message
-        // even if success is true may include message if could not share note to intended parent entity
+        // any pertinent message
         public String message { get; set; }
 
         public ConversionResult() {
-            this.success = false;
             this.message = '';
         }
 
+    }
+
+    public enum ConversionResultStatus {
+        CONVERTED, SKIPPED, ERROR
     }
 
 }

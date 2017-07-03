@@ -193,7 +193,7 @@ private class ConvertNotesToContentNotesQueueableTest {
         Test.startTest();
 
         ConvertNotesToContentNotesService.ConversionResult mockResult = new ConvertNotesToContentNotesService.ConversionResult();
-        mockResult.success = false;
+        mockResult.status = ConvertNotesToContentNotesService.ConversionResultStatus.ERROR;
         mockResult.message = 'Mock Error Result';
 
         ConvertNotesToContentNotesOptions options = new ConvertNotesToContentNotesOptions( settings );
