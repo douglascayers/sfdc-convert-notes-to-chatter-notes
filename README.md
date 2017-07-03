@@ -54,8 +54,8 @@ Packaged Release History
 Release 1.1 (latest)
 -----------
 * Install package
-  * [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tf4000000hqFf)
-  * [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tf4000000hqFf)
+  * [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tf4000000hqFk)
+  * [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tf4000000hqFk)
 * Adds [Ability to Report on Conversions](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/7)
 * Adds [Schedulable, Batchable, Queueable classes now 'global'](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/8)
 * Fixes [Tests fail if no Partner Community enabled in org](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/6)
