@@ -92,8 +92,8 @@ Getting Started
 FAQ
 ===
 
-Note could not be saved
------------------------
+Note could not be saved or Salesforce System Error: 623811003-63707 (123133497) (123133497)
+-------------------------------------------------------------------------------------------
 According to [Salesforce documentation](https://help.salesforce.com/articleView?id=000230867&type=1&language=en_US),
 > ContentNote currently provides a generic error like "Note could not be saved." whenever an issue is encountered while parsing the Note file itself. This is often an indication of an issue with the contents of the text body (Content) file, such as special character(s) that have not been properly escaped.
 
