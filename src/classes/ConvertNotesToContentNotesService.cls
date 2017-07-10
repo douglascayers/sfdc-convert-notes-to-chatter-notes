@@ -11,12 +11,21 @@ public without sharing class ConvertNotesToContentNotesService {
 
     private ConvertNotesToContentNotesOptions options { get; set; }
 
+    // if context user is a community user then we
+    // need to pass on the network id to assign to ContentVersion
+    private ID networkId { get; set; }
+
     public ConvertNotesToContentNotesService() {
         this( new ConvertNotesToContentNotesOptions() );
     }
 
     public ConvertNotesToContentNotesService( ConvertNotesToContentNotesOptions options ) {
         this.options = options;
+    }
+
+    public ConvertNotesToContentNotesService( ConvertNotesToContentNotesOptions options, ID networkId ) {
+        this.options = options;
+        this.networkId = networkId;
     }
 
     /**
@@ -33,6 +42,12 @@ public without sharing class ConvertNotesToContentNotesService {
      *  - LastModifiedDate
      */
     public List<ConversionResult> convert( List<Note> oldNotes ) {
+
+        // determine if communities are enabled and if so then we will need
+        // to assign the network id field when inserting the content versions
+        // otherwise error "INSUFFICIENT_ACCESS_ON_CROSS_REFERENCE_ENTITY" occurs
+        // if community user creates a note and it tries to get converted
+        Boolean communitiesEnabled = ContentVersion.sObjectType.getDescribe().fields.getMap().containsKey( 'NetworkId' );
 
         // identify if any of these notes have already been converted
         Map<ID, ID> alreadyConvertedNoteIdsMap = getAlreadyConvertedNoteIdsMap( oldNotes );
@@ -122,6 +137,11 @@ public without sharing class ConvertNotesToContentNotesService {
                 lastModifiedById = oldNote.lastModifiedById,
                 lastModifiedDate = oldNote.lastModifiedDate
             );
+
+            // if communities are enabled then assign network id
+            if ( communitiesEnabled ) {
+                newNoteVersion.put( 'NetworkId', this.networkId );
+            }
 
             newNoteVersions.add( newNoteVersion );
 

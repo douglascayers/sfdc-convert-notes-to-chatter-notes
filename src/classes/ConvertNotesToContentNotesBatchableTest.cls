@@ -10,34 +10,76 @@ private class ConvertNotesToContentNotesBatchableTest {
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
         settings.Share_Type__c = 'I';
         settings.Visibility__c = 'AllUsers';
-        settings.Convert_in_Near_Real_Time__c = false;
+        settings.Convert_in_Near_Real_Time__c = true;
         settings.Delete_Note_Once_Converted__c = true;
         settings.Convert_Private_Notes__c = true;
         settings.Share_Private_Notes__c = true;
 
         upsert settings;
 
-        Account acct = new Account(
-            name = 'Test Account'
+        Profile p = [ SELECT id FROM Profile WHERE name = 'Standard User' ];
+
+        User user1, user2;
+
+        // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_testing_tools_runas.htm
+        System.runAs( new User( id = UserInfo.getUserId() ) ) {
+
+            user1 = ConvertNotesToContentNotesTestFactory.newUser( p.id, 'Alpha', 'User 1', 'user_1@example.com' );
+            user2 = ConvertNotesToContentNotesTestFactory.newUser( p.id, 'Beta',  'User 2', 'user_2@example.com' );
+
+            insert new List<User>{ user1, user2 };
+
+        }
+
+        Account acct1 = new Account(
+            name = 'Test Account',
+            ownerId = user1.id
         );
 
-        insert acct;
+        insert acct1;
+
+        Note note1 = new Note(
+            title = 'Hello World.txt',
+            body = 'Goodnight Moon',
+            parentId = acct1.id,
+            ownerId = user1.id
+        );
 
         Test.startTest();
 
-        Note note = new Note(
-            title = 'Hello World.txt',
-            body = 'Goodnight Moon',
-            parentId = acct.id
-        );
+        System.runAs( user1 ) {
 
-        insert note;
+            insert note1;
+
+        }
 
         Test.stopTest();
 
-        // because the trigger invokes a queueable which is asynchronous
-        // we are unable to assert the side effects here, all we can do
-        // is test that nothing blows up and assume we are getting code coverage
+        for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT Status__c, Old_Note_ID__c, New_Note_ID__c, Summary__c, Detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
+            System.debug( log );
+        }
+
+        System.assertEquals( 1, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId = :acct1.id ] );
+        System.assertEquals( 0, [ SELECT count() FROM Note WHERE id = :note1.id ] );
+
+        ContentDocumentLink cdl_note1 = [
+            SELECT
+                id,
+                contentDocumentId,
+                contentDocument.latestPublishedVersion.original_record_id__c,
+                contentDocument.latestPublishedVersion.original_record_parent_id__c,
+                contentDocument.latestPublishedVersion.original_record_owner_id__c
+            FROM
+                ContentDocumentLink
+            WHERE
+            linkedEntityId = :acct1.id
+            AND
+            contentDocument.latestPublishedVersion.original_record_id__c = :note1.id
+        ];
+
+        System.assertEquals( note1.id, cdl_note1.contentDocument.latestPublishedVersion.original_record_id__c );
+        System.assertEquals( note1.parentId, cdl_note1.contentDocument.latestPublishedVersion.original_record_parent_id__c );
+        System.assertEquals( note1.ownerId, cdl_note1.contentDocument.latestPublishedVersion.original_record_owner_id__c );
 
     }
 
@@ -111,7 +153,7 @@ private class ConvertNotesToContentNotesBatchableTest {
 
         Test.stopTest();
 
-        for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT summary__c, detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
+        for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT Status__c, Old_Note_ID__c, New_Note_ID__c, Summary__c, Detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
             System.debug( log );
         }
 
@@ -202,7 +244,7 @@ private class ConvertNotesToContentNotesBatchableTest {
 
         Test.stopTest();
 
-        for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT status__c, old_note_id__c, new_note_id__c, summary__c, detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
+        for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT Status__c, Old_Note_ID__c, New_Note_ID__c, Summary__c, Detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
             System.debug( log );
         }
 
@@ -325,7 +367,7 @@ private class ConvertNotesToContentNotesBatchableTest {
 
         Test.stopTest();
 
-        for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT status__c, old_note_id__c, new_note_id__c, summary__c, detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
+        for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT Status__c, Old_Note_ID__c, New_Note_ID__c, Summary__c, Detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
             System.debug( log );
         }
 
@@ -380,11 +422,11 @@ private class ConvertNotesToContentNotesBatchableTest {
 
         Test.stopTest();
 
-        for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT status__c, old_note_id__c, new_note_id__c, summary__c, detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
+        for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT Status__c, Old_Note_ID__c, New_Note_ID__c, Summary__c, Detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
             System.debug( log );
         }
 
-        System.assertEquals( 1, [ SELECT count() FROM Convert_Notes_to_ContentNotes_Log__c ] );
+        System.assertEquals( 1, [ SELECT count() FROM Convert_Notes_to_ContentNotes_Log__c WHERE Status__c = 'ERROR' ] );
 
     }
 
@@ -427,11 +469,11 @@ private class ConvertNotesToContentNotesBatchableTest {
 
         Test.stopTest();
 
-        for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT status__c, old_note_id__c, new_note_id__c, summary__c, detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
+        for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT Status__c, Old_Note_ID__c, New_Note_ID__c, Summary__c, Detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
             System.debug( log );
         }
 
-        System.assertEquals( 1, [ SELECT count() FROM Convert_Notes_to_ContentNotes_Log__c ] );
+        System.assertEquals( 1, [ SELECT count() FROM Convert_Notes_to_ContentNotes_Log__c WHERE Status__c = 'ERROR' ] );
 
     }
 
