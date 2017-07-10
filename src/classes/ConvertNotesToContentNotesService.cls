@@ -97,10 +97,14 @@ public without sharing class ConvertNotesToContentNotesService {
             }
 
             // We set the owner of the new content note to be the
-            // same as the note's creator because both fields
+            // same as the note's owner because both fields
             // must have same value to insert the content note.
             // If they do not match then we get error:
             // "Documents in a user's private library must always be owned by that user."
+            // The other reason to reference the old record's owner
+            // is if the original creator is inactive and the admin
+            // needs the new converted file to be owned by an active user.
+            // The owner of records can be changed, the created by cannot.
 
             ContentVersion newNoteVersion = new ContentVersion(
                 // data fields
