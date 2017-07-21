@@ -102,6 +102,13 @@ If the details reported there are not sufficient for you to resolve the conversi
 if you trust me share with me the note trying to be converted and I'll see if I can pinpoint if it's due to special characters or encoding.
 
 
+Regex too complicated
+---------------------
+You may encounter this error if your original note is very large or contains a lot of HTML formatting.
+
+If you trust me share with me the note trying to be converted and I'll see if I can pinpoint the cause and provide a fix.
+
+
 Max Documents or Versions Published Governor Limit
 --------------------------------------------------
 When converting classic Notes & Attachments the new data is stored in the `ContentVersion` object.
