@@ -106,6 +106,10 @@ Any conversion errors are reported in the **Convert Notes to Enhanced Notes Logs
 If the details reported there are not sufficient for you to resolve the conversion issue then
 if you trust me share with me the note trying to be converted and I'll see if I can pinpoint if it's due to special characters or encoding.
 
+You may need to manually export your `Note` records and replace any special characters then update them back into Salesforce prior attempting to convert them. Please see comments made by **Rachel Park** on [this thread](https://success.salesforce.com/0D53A00003AH4SV) in Success Community on 8/23/2017:
+
+> "Using Data Loader, I actually exported all of the original Notes and did a find/replace on the special characters in Excel and then updated the records in Salesforce. When I ran the conversion process again afterwards, everything completed fine!"
+
 
 Max Documents or Versions Published Governor Limit
 --------------------------------------------------
