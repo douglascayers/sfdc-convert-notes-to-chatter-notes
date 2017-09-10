@@ -302,6 +302,14 @@ private class ConvertNotesToContentNotesServiceTest {
 
         insert account;
 
+        Note emptyNote = new Note(
+                title = 'Hello World.txt',
+                body = '',
+                parentId = account.id,
+                ownerId = user1.id,
+                createdById = user1.id
+        );
+
         Note plainNote = new Note(
             title = 'Hello World.txt',
             body = 'Goodnight Moon',
@@ -311,7 +319,7 @@ private class ConvertNotesToContentNotesServiceTest {
         );
 
         Note specialTitleNote = new Note(
-            title = 'Hello ! @ # $ % ^ & * ( )  + = - _ \' \" , . ? / \\ [ ] { } | ` ~ < >',
+            title = 'Hello ! @ # $ % ^ & * ( )  + = - _ \' \" , . ? / \\ [ ] { } | ` ~ < > ¢ © ®',
             body = 'Goodnight Moon',
             parentId = account.id,
             ownerId = user1.id,
@@ -320,15 +328,15 @@ private class ConvertNotesToContentNotesServiceTest {
 
         Note specialBodyNote = new Note(
             title = 'Hello World.txt',
-            body = 'Hello ! @ # $ % ^ & * ( )  + = - _ \' \" , . ? / \\ [ ] { } | ` ~ < >',
+            body = 'Hello ! @ # $ % ^ & * ( )  + = - _ \' \" , . ? / \\ [ ] { } | ` ~ < > ¢ © ®',
             parentId = account.id,
             ownerId = user1.id,
             createdById = user1.id
         );
 
         Note specialTitleAndBodyNote = new Note(
-            title = 'Hello ! @ # $ % ^ & * ( )  + = - _ \' \" , . ? / \\ [ ] { } | ` ~ < >',
-            body = 'Hello ! @ # $ % ^ & * ( )  + = - _ \' \" , . ? / \\ [ ] { } | ` ~ < >',
+            title = 'Hello ! @ # $ % ^ & * ( )  + = - _ \' \" , . ? / \\ [ ] { } | ` ~ < > ¢ © ®',
+            body = 'Hello ! @ # $ % ^ & * ( )  + = - _ \' \" , . ? / \\ [ ] { } | ` ~ < > ¢ © ®',
             parentId = account.id,
             ownerId = user1.id,
             createdById = user1.id
@@ -336,7 +344,7 @@ private class ConvertNotesToContentNotesServiceTest {
 
         Note htmlBodyNote = new Note(
             title = 'Hello World.html',
-            body = '<b>bold</b> <u>underline</u> <i>italic</i> <ul><li>list item</li></ul> <ol><li>list item</li></ol> <a href="www.salesforce.com">link</a> <div></div> <p></p> &nbsp; <span style="color:red">text</span> <img src="image.png"/>',
+            body = '<b>bold</b> <u>underline</u> <i>italic</i> <ul><li>list item</li></ul> <ol><li>list item</li></ol> <a href="www.salesforce.com">link</a> <div></div> <p></p> &nbsp; &copy; &trade; <span style="color:red">text</span> <img src="image.png"/>',
             parentId = account.id,
             ownerId = user1.id,
             createdById = user1.id
@@ -350,7 +358,7 @@ private class ConvertNotesToContentNotesServiceTest {
             createdById = user1.id
         );
 
-        Note[] notes = new Note[] { plainNote, specialTitleNote, specialBodyNote, specialTitleAndBodyNote, htmlBodyNote, githubIssue8 };
+        Note[] notes = new Note[] { emptyNote, plainNote, specialTitleNote, specialBodyNote, specialTitleAndBodyNote, htmlBodyNote, githubIssue8 };
 
         insert notes;
 
