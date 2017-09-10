@@ -1,7 +1,7 @@
 /**
  * Developed by Doug Ayers (douglascayers.com)
  */
-public with sharing class ConvertNotesInstallHandler implements InstallHandler {
+public with sharing class ConvertNotesInstallHandler implements System.InstallHandler {
 
     public void onInstall( InstallContext context ) {
 

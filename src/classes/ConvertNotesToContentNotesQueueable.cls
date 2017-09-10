@@ -6,7 +6,7 @@
  *
  * Actual conversion for the execution is delegated to ConvertNotesToContentNotesService.
  */
-global with sharing class ConvertNotesToContentNotesQueueable implements Queueable {
+global with sharing class ConvertNotesToContentNotesQueueable implements System.Queueable {
 
     @TestVisible
     private List<ConvertNotesToContentNotesService.ConversionResult> mockResults { get; set; }

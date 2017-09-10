@@ -3,7 +3,7 @@
  *
  * Designed for scheduling periodic job to perform batch conversion of notes.
  */
-global with sharing class ConvertNotesToContentNotesSchedulable implements Schedulable {
+global with sharing class ConvertNotesToContentNotesSchedulable implements System.Schedulable {
 
     public Integer batchSize { get; set; }
 
