@@ -6,7 +6,7 @@
  *
  * Actual conversion for the execution is delegated to ConvertNotesToContentNotesService.
  */
-global with sharing class ConvertNotesToContentNotesQueueable implements Queueable {
+global with sharing class ConvertNotesToContentNotesQueueable implements System.Queueable {
 
     @TestVisible
     private List<ConvertNotesToContentNotesService.ConversionResult> mockResults { get; set; }
@@ -20,14 +20,24 @@ global with sharing class ConvertNotesToContentNotesQueueable implements Queueab
 
     private Set<ID> noteIds { get; set; }
 
+    // if context user is a community user then we
+    // need to pass on the network id to assign to ContentVersion
+    private ID networkId { get; set; }
+
     global ConvertNotesToContentNotesQueueable( Set<ID> noteIds ) {
         this( noteIds, new ConvertNotesToContentNotesOptions() );
     }
 
     // not exposed to subscriber orgs, want users to configure the custom setting
     public ConvertNotesToContentNotesQueueable( Set<ID> noteIds, ConvertNotesToContentNotesOptions options ) {
+        this( noteIds, options, Network.getNetworkId() );
+    }
+
+    // not exposed to subscriber orgs, want users to configure the custom setting
+    public ConvertNotesToContentNotesQueueable( Set<ID> noteIds, ConvertNotesToContentNotesOptions options, ID networkId ) {
         this.noteIds = noteIds;
         this.options = options;
+        this.networkId = networkId;
     }
 
     // ----------------------------------------------------------------------
@@ -35,6 +45,8 @@ global with sharing class ConvertNotesToContentNotesQueueable implements Queueab
     public void execute( QueueableContext context ) {
 
         SavePoint sp = Database.setSavePoint();
+
+        DateTime startTime = DateTime.now();
 
         try {
 
@@ -52,7 +64,7 @@ global with sharing class ConvertNotesToContentNotesQueueable implements Queueab
                     parentId
             ]);
 
-            ConvertNotesToContentNotesService service = new ConvertNotesToContentNotesService( this.options );
+            ConvertNotesToContentNotesService service = new ConvertNotesToContentNotesService( this.options, this.networkId );
 
             List<ConvertNotesToContentNotesService.ConversionResult> results = service.convert( notes );
 
@@ -78,7 +90,7 @@ global with sharing class ConvertNotesToContentNotesQueueable implements Queueab
 
         } finally {
 
-            ConvertNotesToContentNotesLogger.sendApexExceptionEmailIfAnyErrorsSince( context.getJobId() );
+            ConvertNotesToContentNotesLogger.sendApexExceptionEmailIfAnyErrorsSince( startTime );
 
         }
 

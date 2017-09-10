@@ -1,7 +1,7 @@
 /**
  * Developed by Doug Ayers (douglascayers.com)
  */
-public with sharing class ConvertNotesInstallHandler implements InstallHandler {
+public with sharing class ConvertNotesInstallHandler implements System.InstallHandler {
 
     public void onInstall( InstallContext context ) {
 
@@ -16,8 +16,6 @@ public with sharing class ConvertNotesInstallHandler implements InstallHandler {
 
                 if ( String.isBlank( settings.id ) ) {
 
-                    settings.Share_Type__c = 'I';
-                    settings.Visibility__c = 'AllUsers';
                     settings.Convert_in_Near_Real_Time__c = false;
                     settings.Delete_Note_Once_Converted__c = false;
                     settings.Convert_Private_Notes__c = false;

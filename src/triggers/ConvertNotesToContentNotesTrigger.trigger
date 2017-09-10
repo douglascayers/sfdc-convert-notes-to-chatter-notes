@@ -15,7 +15,7 @@ trigger ConvertNotesToContentNotesTrigger on Note ( after insert ) {
 
         ConvertNotesToContentNotesOptions options = new ConvertNotesToContentNotesOptions( settings );
 
-        ConvertNotesToContentNotesQueueable queueable = new ConvertNotesToContentNotesQueueable( Trigger.newMap.keySet(), options );
+        ConvertNotesToContentNotesQueueable queueable = new ConvertNotesToContentNotesQueueable( Trigger.newMap.keySet(), options, Network.getNetworkId() );
 
         System.enqueueJob( queueable );
 

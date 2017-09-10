@@ -51,11 +51,29 @@ Pre-Requisites
 Packaged Release History
 ------------------------
 
-Release 1.1 (latest)
+Release 1.2 (current)
 -----------
 * Install package
-  * [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tf4000000hqFk)
-  * [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tf4000000hqFk)
+  * [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tf40000019WZq)
+  * [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tf40000019WZq)
+* Improved special character handling, partially resolves [Salesforce System Error](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/14) and [Try to decipher System Error Codes](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/11).
+* Preserves `LastModifiedDate` from original note.
+
+Please note, this app always preserved the original `CreatedDate` of the converted note but the `LastModifiedDate` was always "today"
+because of how the new Enhanced Note was being shared to the parent record. In my original design I had opted to give you all more options around how
+the newly converted Enhanced Note gets shared to internal and community users as well as whether users with access to the parent entity inherited
+read-only or edit access to the file. But those options came at the cost of never being able to preserve the original `LastModifiedDate`.
+
+Responding to your all's feedback and use cases, this version of the app now preserves the `LastModifiedDate` of the original note!
+However, to make this possible means the app no longer manually shares the new Enhanced Note by explicitly creating `ContentDocumentLink` records.
+This has the side effect that two previously available conversion settings have now been removed:
+  * **Which community of users who have access to the note's parent record get access to the converted notes?**
+  * **How should view or edit access to the converted note be granted to users with access to the note's parent record?**
+
+These options now rely on the Salesforce defaults.
+
+Release 1.1
+-----------
 * Adds [Ability to Report on Conversions](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/7)
 * Adds [Schedulable, Batchable, Queueable classes now 'global'](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/8)
 * Fixes [Tests fail if no Partner Community enabled in org](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/6)
@@ -109,6 +127,13 @@ if you trust me share with me the note trying to be converted and I'll see if I 
 You may need to manually export your `Note` records and replace any special characters then update them back into Salesforce prior attempting to convert them. Please see comments made by **Rachel Park** on [this thread](https://success.salesforce.com/0D53A00003AH4SV) in Success Community on 8/23/2017:
 
 > "Using Data Loader, I actually exported all of the original Notes and did a find/replace on the special characters in Excel and then updated the records in Salesforce. When I ran the conversion process again afterwards, everything completed fine!"
+
+
+Regex too complicated
+---------------------
+You may encounter this error if your original note is very large or contains a lot of HTML formatting.
+
+If you trust me share with me the note trying to be converted and I'll see if I can pinpoint the cause and provide a fix.
 
 
 Max Documents or Versions Published Governor Limit

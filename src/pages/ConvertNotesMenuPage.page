@@ -47,9 +47,9 @@
                 <div class="menu-grid-col slds-p-horizontal--medium slds-size--1-of-3">
                     <a href="{!URLFOR($Page.ConvertNotesRunOncePage)}" style="text-decoration: none;">
                         <div class="slds-box slds-theme--shade">
-                            <h3 class="slds-text-heading--small">2. Test Conversion</h3>
+                            <h3 class="slds-text-heading--small">2. Convert Notes</h3>
                             <p class="slds-text-color--default">
-                                Run a test conversion job limited to specific parent records.
+                                Run conversion job for specific parent records or for all notes.
                             </p>
                         </div>
                     </a>
@@ -103,7 +103,7 @@
                 <p>
                     &copy; 2017 <a href="https://douglascayers.com" target="_blank">Douglas C. Ayers</a>.
                     View project on <a href="https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes" target="_blank">GitHub</a>.
-                    Licensed under <a href="https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/blob/master/LICENSE" target="_blank">MIT License</a>.
+                    Licensed under <a href="https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/blob/master/LICENSE" target="_blank">BSD-3 License</a>.
                 </p>
             </div>
 

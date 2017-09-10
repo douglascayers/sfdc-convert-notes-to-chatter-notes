@@ -11,12 +11,21 @@ public without sharing class ConvertNotesToContentNotesService {
 
     private ConvertNotesToContentNotesOptions options { get; set; }
 
+    // if context user is a community user then we
+    // need to pass on the network id to assign to ContentVersion
+    private ID networkId { get; set; }
+
     public ConvertNotesToContentNotesService() {
         this( new ConvertNotesToContentNotesOptions() );
     }
 
     public ConvertNotesToContentNotesService( ConvertNotesToContentNotesOptions options ) {
         this.options = options;
+    }
+
+    public ConvertNotesToContentNotesService( ConvertNotesToContentNotesOptions options, ID networkId ) {
+        this.options = options;
+        this.networkId = networkId;
     }
 
     /**
@@ -33,6 +42,12 @@ public without sharing class ConvertNotesToContentNotesService {
      *  - LastModifiedDate
      */
     public List<ConversionResult> convert( List<Note> oldNotes ) {
+
+        // determine if communities are enabled and if so then we will need
+        // to assign the network id field when inserting the content versions
+        // otherwise error "INSUFFICIENT_ACCESS_ON_CROSS_REFERENCE_ENTITY" occurs
+        // if community user creates a note and it tries to get converted
+        Boolean communitiesEnabled = ContentVersion.sObjectType.getDescribe().fields.getMap().containsKey( 'NetworkId' );
 
         // identify if any of these notes have already been converted
         Map<ID, ID> alreadyConvertedNoteIdsMap = getAlreadyConvertedNoteIdsMap( oldNotes );
@@ -80,12 +95,26 @@ public without sharing class ConvertNotesToContentNotesService {
             // per Salesforce we must escape certain special characters
             // logic inspired by David Reed (http://www.ktema.org//2016/08/24/importing-notes-into-salesforce/)
             // https://help.salesforce.com/apex/HTViewSolution?id=000230867&language=en_US
-            String noteBody = ( ( oldNote.body == null ) ? '' : oldNote.body )
+            String noteBody = ( String.isBlank( oldNote.body ) ? '<p></p>' : oldNote.body )
+                // the escape entity for '&' is '&amp;'
+                // so it includes '&' in its own escape sequence, which is a problem
+                // because escapeXml() changes '&' to '&amp;' as well
+                // so a single '&' would become '&amp;amp;'
+                // therefore we first find any normal '&'
+                // and replace them with a token value that will
+                // be later replaced with '&amp;'
+                .replace('&', 'sfdcAMPERSANDsfdc')
                 .escapeXml()
+                .replace('sfdcAMPERSANDsfdc', '&amp;')
+                // handle nitpick on apostrophe html entity
+                .replace('&apos;', '&#39;')
+                // handle known unsupported non-ascii characters
+                // oddly, other symbols like ® ™ are ok unescaped
+                .replace('©', '&copy;')
+                // handle new lines
                 .replace('\r\n', '<br>')
                 .replace('\r', '<br>')
                 .replace('\n', '<br>')
-                .replace('&apos;', '&#39;')
             ;
 
             // content version cannot have a null or empty string body
@@ -97,10 +126,14 @@ public without sharing class ConvertNotesToContentNotesService {
             }
 
             // We set the owner of the new content note to be the
-            // same as the note's creator because both fields
+            // same as the note's owner because both fields
             // must have same value to insert the content note.
             // If they do not match then we get error:
             // "Documents in a user's private library must always be owned by that user."
+            // The other reason to reference the old record's owner
+            // is if the original creator is inactive and the admin
+            // needs the new converted file to be owned by an active user.
+            // The owner of records can be changed, the created by cannot.
 
             ContentVersion newNoteVersion = new ContentVersion(
                 // data fields
@@ -118,6 +151,15 @@ public without sharing class ConvertNotesToContentNotesService {
                 lastModifiedById = oldNote.lastModifiedById,
                 lastModifiedDate = oldNote.lastModifiedDate
             );
+
+            if ( !oldNote.isPrivate || ( oldNote.isPrivate && this.options.sharePrivateNotesWithParentRecord ) ) {
+                newNoteVersion.firstPublishLocationId = oldNote.parentId;
+            }
+
+            // if communities are enabled then assign network id
+            if ( communitiesEnabled ) {
+                newNoteVersion.put( 'NetworkId', this.networkId );
+            }
 
             newNoteVersions.add( newNoteVersion );
 
@@ -183,64 +225,27 @@ public without sharing class ConvertNotesToContentNotesService {
 
     private void postProcessConversionResults( Map<ID, ConversionResult> conversionResultsMap ) {
 
-        Set<ID> contentNoteIds = new Set<ID>();
-
-        for ( ConversionResult conversionResult : conversionResultsMap.values() ) {
-            if ( conversionResult.status == ConversionResultStatus.CONVERTED && String.isNotBlank( conversionResult.contentNoteId ) ) {
-                contentNoteIds.add( conversionResult.contentNoteId );
-            }
+        // should we delete the converted notes?
+        if ( this.options.deleteNotesUponConversion ) {
+            deleteConvertedNotes( conversionResultsMap );
         }
 
-        Map<ID, ContentVersion> contentVersionMap = new Map<ID, ContentVersion>([
-            SELECT
-                id,
-                contentDocumentId
-            FROM
-                ContentVersion
-            WHERE
-                id IN :contentNoteIds
-        ]);
+    }
+
+    // -----------------------------------------------------------------
+
+    private void deleteConvertedNotes( Map<ID, ConversionResult> conversionResultsMap ) {
 
         List<Note> notesToDelete = new List<Note>();
-        List<ContentDocumentLink> contentDocumentLinks = new List<ContentDocumentLink>();
 
         for ( ConversionResult conversionResult : conversionResultsMap.values() ) {
-
             if ( conversionResult.status == ConversionResultStatus.CONVERTED ) {
-
-                // should original note be deleted?
-                if ( this.options.deleteNotesUponConversion ) {
-                    notesToDelete.add( conversionResult.oldNote );
-                }
-
-                // should converted note be shared with parent?
-                if ( !conversionResult.oldNote.isPrivate || ( conversionResult.oldNote.isPrivate && this.options.sharePrivateNotesWithParentRecord ) ) {
-
-                    ContentVersion cv = contentVersionMap.get( conversionResult.contentNoteId );
-
-                    if ( cv != null ) {
-
-                        contentDocumentLinks.add( new ContentDocumentLink(
-                            linkedEntityId = conversionResult.oldNote.parentId,
-                            contentDocumentId = cv.contentDocumentId,
-                            shareType = this.options.shareType,
-                            visibility = this.options.visibility
-                        ));
-
-                    }
-
-                }
-
+                notesToDelete.add( conversionResult.oldNote );
             }
-
         }
 
         if ( notesToDelete.size() > 0 ) {
             delete notesToDelete;
-        }
-
-        if ( contentDocumentLinks.size() > 0 ) {
-            insert contentDocumentLinks;
         }
 
     }
