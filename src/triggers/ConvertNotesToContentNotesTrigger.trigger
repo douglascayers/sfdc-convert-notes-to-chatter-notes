@@ -15,18 +15,7 @@ trigger ConvertNotesToContentNotesTrigger on Note ( after insert ) {
 
         ConvertNotesToContentNotesOptions options = new ConvertNotesToContentNotesOptions( settings );
 
-        // if community user created this note then set sharing of the new note to 'AllUsers'
-        // so both internal and external users can access the converted note
-        // https://success.salesforce.com/0D53A000032fahS
-
-        ID networkId = Network.getNetworkId();
-
-        if ( String.isNotBlank( networkId ) ) {
-            options.shareType = 'I';
-            options.visibility = 'AllUsers';
-        }
-
-        ConvertNotesToContentNotesQueueable queueable = new ConvertNotesToContentNotesQueueable( Trigger.newMap.keySet(), options, networkId );
+        ConvertNotesToContentNotesQueueable queueable = new ConvertNotesToContentNotesQueueable( Trigger.newMap.keySet(), options, Network.getNetworkId() );
 
         System.enqueueJob( queueable );
 

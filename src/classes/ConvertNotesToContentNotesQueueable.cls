@@ -46,6 +46,8 @@ global with sharing class ConvertNotesToContentNotesQueueable implements System.
 
         SavePoint sp = Database.setSavePoint();
 
+        DateTime startTime = DateTime.now();
+
         try {
 
             System.debug( '[ConvertNotesToContentNotesQueueable.execute] Executing: ' + context );
@@ -88,7 +90,7 @@ global with sharing class ConvertNotesToContentNotesQueueable implements System.
 
         } finally {
 
-            ConvertNotesToContentNotesLogger.sendApexExceptionEmailIfAnyErrorsSince( context.getJobId() );
+            ConvertNotesToContentNotesLogger.sendApexExceptionEmailIfAnyErrorsSince( startTime );
 
         }
 

@@ -152,6 +152,10 @@ public without sharing class ConvertNotesToContentNotesService {
                 lastModifiedDate = oldNote.lastModifiedDate
             );
 
+            if ( !oldNote.isPrivate || ( oldNote.isPrivate && this.options.sharePrivateNotesWithParentRecord ) ) {
+                newNoteVersion.firstPublishLocationId = oldNote.parentId;
+            }
+
             // if communities are enabled then assign network id
             if ( communitiesEnabled ) {
                 newNoteVersion.put( 'NetworkId', this.networkId );
@@ -221,64 +225,27 @@ public without sharing class ConvertNotesToContentNotesService {
 
     private void postProcessConversionResults( Map<ID, ConversionResult> conversionResultsMap ) {
 
-        Set<ID> contentNoteIds = new Set<ID>();
-
-        for ( ConversionResult conversionResult : conversionResultsMap.values() ) {
-            if ( conversionResult.status == ConversionResultStatus.CONVERTED && String.isNotBlank( conversionResult.contentNoteId ) ) {
-                contentNoteIds.add( conversionResult.contentNoteId );
-            }
+        // should we delete the converted notes?
+        if ( this.options.deleteNotesUponConversion ) {
+            deleteConvertedNotes( conversionResultsMap );
         }
 
-        Map<ID, ContentVersion> contentVersionMap = new Map<ID, ContentVersion>([
-            SELECT
-                id,
-                contentDocumentId
-            FROM
-                ContentVersion
-            WHERE
-                id IN :contentNoteIds
-        ]);
+    }
+
+    // -----------------------------------------------------------------
+
+    private void deleteConvertedNotes( Map<ID, ConversionResult> conversionResultsMap ) {
 
         List<Note> notesToDelete = new List<Note>();
-        List<ContentDocumentLink> contentDocumentLinks = new List<ContentDocumentLink>();
 
         for ( ConversionResult conversionResult : conversionResultsMap.values() ) {
-
             if ( conversionResult.status == ConversionResultStatus.CONVERTED ) {
-
-                // should original note be deleted?
-                if ( this.options.deleteNotesUponConversion ) {
-                    notesToDelete.add( conversionResult.oldNote );
-                }
-
-                // should converted note be shared with parent?
-                if ( !conversionResult.oldNote.isPrivate || ( conversionResult.oldNote.isPrivate && this.options.sharePrivateNotesWithParentRecord ) ) {
-
-                    ContentVersion cv = contentVersionMap.get( conversionResult.contentNoteId );
-
-                    if ( cv != null ) {
-
-                        contentDocumentLinks.add( new ContentDocumentLink(
-                            linkedEntityId = conversionResult.oldNote.parentId,
-                            contentDocumentId = cv.contentDocumentId,
-                            shareType = this.options.shareType,
-                            visibility = this.options.visibility
-                        ));
-
-                    }
-
-                }
-
+                notesToDelete.add( conversionResult.oldNote );
             }
-
         }
 
         if ( notesToDelete.size() > 0 ) {
             delete notesToDelete;
-        }
-
-        if ( contentDocumentLinks.size() > 0 ) {
-            insert contentDocumentLinks;
         }
 
     }

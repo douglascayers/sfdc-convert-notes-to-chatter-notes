@@ -8,8 +8,6 @@ private class ConvertNotesToContentNotesQueueableTest {
     static void test_queueable_with_options() {
 
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
-        settings.Share_Type__c = 'I';
-        settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
         settings.Convert_Private_Notes__c = true;
@@ -92,8 +90,6 @@ private class ConvertNotesToContentNotesQueueableTest {
     static void test_queueable_without_options() {
 
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
-        settings.Share_Type__c = 'I';
-        settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = false;
         settings.Convert_Private_Notes__c = true;
@@ -175,8 +171,6 @@ private class ConvertNotesToContentNotesQueueableTest {
     static void test_conversion_error() {
 
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
-        settings.Share_Type__c = 'I';
-        settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
         settings.Convert_Private_Notes__c = true;
@@ -229,8 +223,6 @@ private class ConvertNotesToContentNotesQueueableTest {
     static void test_conversion_exception() {
 
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
-        settings.Share_Type__c = 'I';
-        settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
         settings.Convert_Private_Notes__c = true;

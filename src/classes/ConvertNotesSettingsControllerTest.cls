@@ -5,26 +5,9 @@
 private class ConvertNotesSettingsControllerTest {
 
     @isTest
-    static void test_communities_enabled() {
-
-        Test.startTest();
-
-        ConvertNotesSettingsController controller = new ConvertNotesSettingsController();
-
-        Boolean isCommunitiesEnabled = controller.isCommunitiesEnabled;
-
-        Test.stopTest();
-
-        System.assertEquals( Schema.getGlobalDescribe().containsKey( 'Network' ), isCommunitiesEnabled );
-
-    }
-
-    @isTest
     static void test_save_new_settings() {
 
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
-        settings.Share_Type__c = 'I';
-        settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
         settings.Convert_Private_Notes__c = true;
@@ -50,8 +33,6 @@ private class ConvertNotesSettingsControllerTest {
     static void test_update_existing_settings() {
 
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
-        settings.Share_Type__c = 'I';
-        settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
         settings.Convert_Private_Notes__c = true;
@@ -78,8 +59,6 @@ private class ConvertNotesSettingsControllerTest {
     static void test_save_error() {
 
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
-        settings.Share_Type__c = 'I';
-        settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
         settings.Convert_Private_Notes__c = true;
@@ -93,18 +72,15 @@ private class ConvertNotesSettingsControllerTest {
 
         controller.settings = settings;
 
-        // leave fields blank, cause validation errors
-        controller.settings.visibility__c = null;
+        controller.mockIsFormValid = false;
 
         controller.save();
 
         System.assertEquals( false, controller.success );
         System.assert( controller.message.containsIgnoreCase( 'Please answer all questions' ) );
 
-        // fix validation error
-        controller.settings.visibility__c = 'AllUsers';
-
-        delete settings; // will cause exception on save because ID field is still populated on controller's reference
+        controller.mockIsFormValid = true;
+        controller.mockException = new System.NullPointerException();
 
         controller.save();
 
@@ -115,66 +91,61 @@ private class ConvertNotesSettingsControllerTest {
     }
 
     @isTest
-    static void test_infer_convert_and_share_private_notes() {
-
-        Convert_Notes_to_ContentNotes_Settings__c settings = new Convert_Notes_to_ContentNotes_Settings__c();
-
-        ConvertNotesSettingsController controller = new ConvertNotesSettingsController();
+    static void test_inferConvertAndSharePrivateNotes() {
 
         Test.startTest();
 
-        settings.Convert_Private_Notes__c = true;
-        settings.Share_Private_Notes__c = true;
-        System.assertEquals( 'yes_convert_yes_share', controller.inferConvertAndSharePrivateNotes( settings ) );
+        ConvertNotesSettingsController controller = new ConvertNotesSettingsController();
 
-        settings.Convert_Private_Notes__c = true;
-        settings.Share_Private_Notes__c = false;
-        System.assertEquals( 'yes_convert_no_share', controller.inferConvertAndSharePrivateNotes( settings ) );
+        String yes_convert_yes_share = controller.inferConvertAndSharePrivateNotes( new Convert_Notes_to_ContentNotes_Settings__c(
+            Convert_Private_Notes__c = true,
+            Share_Private_Notes__c = true
+        ));
 
-        settings.Convert_Private_Notes__c = false;
-        settings.Share_Private_Notes__c = true; // ignored when convert is false
-        System.assertEquals( 'no_convert_no_share', controller.inferConvertAndSharePrivateNotes( settings ) );
+        String yes_convert_no_share = controller.inferConvertAndSharePrivateNotes( new Convert_Notes_to_ContentNotes_Settings__c(
+            Convert_Private_Notes__c = true,
+            Share_Private_Notes__c = false
+        ));
 
-        settings.Convert_Private_Notes__c = false;
-        settings.Share_Private_Notes__c = false; // ignored when convert is false
-        System.assertEquals( 'no_convert_no_share', controller.inferConvertAndSharePrivateNotes( settings ) );
+        String no_convert_no_share = controller.inferConvertAndSharePrivateNotes( new Convert_Notes_to_ContentNotes_Settings__c(
+            Convert_Private_Notes__c = false,
+            Share_Private_Notes__c = false
+        ));
 
         Test.stopTest();
+
+        System.assertEquals( 'yes_convert_yes_share', yes_convert_yes_share );
+        System.assertEquals( 'yes_convert_no_share', yes_convert_no_share );
+        System.assertEquals( 'no_convert_no_share', no_convert_no_share );
 
     }
 
     @isTest
-    static void test_apply_convert_and_share_private_notes() {
-
-        Convert_Notes_to_ContentNotes_Settings__c settings = new Convert_Notes_to_ContentNotes_Settings__c();
-
-        ConvertNotesSettingsController controller = new ConvertNotesSettingsController();
+    static void test_applyConvertAndSharePrivateNotes() {
 
         Test.startTest();
 
-        controller.applyConvertAndSharePrivateNotes( settings, 'yes_convert_yes_share' );
-        System.assertEquals( true, settings.Convert_Private_Notes__c );
-        System.assertEquals( true, settings.Share_Private_Notes__c );
+        ConvertNotesSettingsController controller = new ConvertNotesSettingsController();
 
-        controller.applyConvertAndSharePrivateNotes( settings, 'yes_convert_no_share' );
-        System.assertEquals( true, settings.Convert_Private_Notes__c );
-        System.assertEquals( false, settings.Share_Private_Notes__c );
+        Convert_Notes_to_ContentNotes_Settings__c yes_convert_yes_share = new Convert_Notes_to_ContentNotes_Settings__c();
+        controller.applyConvertAndSharePrivateNotes( yes_convert_yes_share, 'yes_convert_yes_share' );
 
-        controller.applyConvertAndSharePrivateNotes( settings, 'no_convert_yes_share' );
-        System.assertEquals( false, settings.Convert_Private_Notes__c );
-        System.assertEquals( false, settings.Share_Private_Notes__c ); // always false if convert is false
+        Convert_Notes_to_ContentNotes_Settings__c yes_convert_no_share = new Convert_Notes_to_ContentNotes_Settings__c();
+        controller.applyConvertAndSharePrivateNotes( yes_convert_no_share, 'yes_convert_no_share' );
 
-        controller.applyConvertAndSharePrivateNotes( settings, 'no_convert_no_share' );
-        System.assertEquals( false, settings.Convert_Private_Notes__c );
-        System.assertEquals( false, settings.Share_Private_Notes__c ); // always false if convert is false
-
-        settings.Convert_Private_Notes__c = true;
-        settings.Share_Private_Notes__c = true;
-        controller.applyConvertAndSharePrivateNotes( settings, 'gibberish' );
-        System.assertEquals( false, settings.Convert_Private_Notes__c ); // always false for unrecognized values
-        System.assertEquals( false, settings.Share_Private_Notes__c ); // always false for unrecognized values
+        Convert_Notes_to_ContentNotes_Settings__c no_convert_no_share = new Convert_Notes_to_ContentNotes_Settings__c();
+        controller.applyConvertAndSharePrivateNotes( no_convert_no_share, 'no_convert_no_share' );
 
         Test.stopTest();
+
+        System.assertEquals( true, yes_convert_yes_share.Convert_Private_Notes__c );
+        System.assertEquals( true, yes_convert_yes_share.Share_Private_Notes__c );
+
+        System.assertEquals( true, yes_convert_no_share.Convert_Private_Notes__c );
+        System.assertEquals( false, yes_convert_no_share.Share_Private_Notes__c );
+
+        System.assertEquals( false, no_convert_no_share.Convert_Private_Notes__c );
+        System.assertEquals( false, no_convert_no_share.Share_Private_Notes__c );
 
     }
 

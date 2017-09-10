@@ -8,8 +8,6 @@ private class ConvertNotesToContentNotesBatchableTest {
     static void test_real_time_trigger() {
 
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
-        settings.Share_Type__c = 'I';
-        settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = true;
         settings.Delete_Note_Once_Converted__c = true;
         settings.Convert_Private_Notes__c = true;
@@ -72,9 +70,9 @@ private class ConvertNotesToContentNotesBatchableTest {
             FROM
                 ContentDocumentLink
             WHERE
-            linkedEntityId = :acct1.id
-            AND
-            contentDocument.latestPublishedVersion.original_record_id__c = :note1.id
+                linkedEntityId = :acct1.id
+                AND
+                contentDocument.latestPublishedVersion.original_record_id__c = :note1.id
         ];
 
         System.assertEquals( note1.id, cdl_note1.contentDocument.latestPublishedVersion.original_record_id__c );
@@ -87,8 +85,6 @@ private class ConvertNotesToContentNotesBatchableTest {
     static void test_scope_conversion() {
 
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
-        settings.Share_Type__c = 'I';
-        settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
         settings.Convert_Private_Notes__c = true;
@@ -173,9 +169,9 @@ private class ConvertNotesToContentNotesBatchableTest {
             FROM
                 ContentDocumentLink
             WHERE
-            linkedEntityId = :acct1.id
-            AND
-            contentDocument.latestPublishedVersion.original_record_id__c = :note1.id
+                linkedEntityId = :acct1.id
+                AND
+                contentDocument.latestPublishedVersion.original_record_id__c = :note1.id
         ];
 
         System.assertEquals( note1.id, cdl_note1.contentDocument.latestPublishedVersion.original_record_id__c );
@@ -188,8 +184,6 @@ private class ConvertNotesToContentNotesBatchableTest {
     static void test_preserve_original_owner() {
 
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
-        settings.Share_Type__c = 'I';
-        settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
         settings.Convert_Private_Notes__c = true;
@@ -280,9 +274,9 @@ private class ConvertNotesToContentNotesBatchableTest {
             FROM
                 ContentDocumentLink
             WHERE
-            linkedEntityId = :acct.id
-            AND
-            contentDocument.latestPublishedVersion.original_record_id__c = :note2.id
+                linkedEntityId = :acct.id
+                AND
+                contentDocument.latestPublishedVersion.original_record_id__c = :note2.id
         ];
 
         System.assertEquals( 'SNOTE', cdl_note2.contentDocument.fileType );
@@ -296,8 +290,6 @@ private class ConvertNotesToContentNotesBatchableTest {
     static void test_preserve_original_inactive_owner() {
 
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
-        settings.Share_Type__c = 'I';
-        settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
         settings.Convert_Private_Notes__c = true;
@@ -383,8 +375,6 @@ private class ConvertNotesToContentNotesBatchableTest {
     static void test_conversion_error() {
 
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
-        settings.Share_Type__c = 'I';
-        settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
         settings.Convert_Private_Notes__c = true;
@@ -434,8 +424,6 @@ private class ConvertNotesToContentNotesBatchableTest {
     static void test_conversion_exception() {
 
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
-        settings.Share_Type__c = 'I';
-        settings.Visibility__c = 'AllUsers';
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
         settings.Convert_Private_Notes__c = true;
