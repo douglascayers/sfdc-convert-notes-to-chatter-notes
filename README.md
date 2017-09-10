@@ -54,8 +54,8 @@ Packaged Release History
 Release 1.2 (current)
 -----------
 * Install package
-  * [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=)
-  * [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=)
+  * [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tf40000019WZq)
+  * [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tf40000019WZq)
 * Improved special character handling, partially resolves [Salesforce System Error](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/14) and [Try to decipher System Error Codes](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/11).
 * Preserves `LastModifiedDate` from original note.
 
