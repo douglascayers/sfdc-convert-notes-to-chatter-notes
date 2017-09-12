@@ -106,6 +106,11 @@ Getting Started
 
 ![screen shot](images/pages-conversion-settings.png)
 
+---
+
+<a target='_blank' rel='nofollow' href='https://app.codesponsor.io/link/SXSxcXEh3FwrvhNp1rxuugLP/DouglasCAyers/sfdc-convert-notes-to-chatter-notes'>  <img alt='Sponsor' width='888' height='68' src='https://app.codesponsor.io/embed/SXSxcXEh3FwrvhNp1rxuugLP/DouglasCAyers/sfdc-convert-notes-to-chatter-notes.svg' /></a>
+
+---
 
 FAQ
 ===
@@ -251,6 +256,3 @@ Special Thanks
 * [Rick MacGuigan](https://www.linkedin.com/in/rick-macguigan-4406592b/), a very helpful early adopter and tester!
 * [David Reed](https://github.com/davidmreed/DMRNoteAttachmentImporter), for insight how to [escape](https://help.salesforce.com/articleView?id=000230867&type=1&language=en_US) HTML tags in original note content
 * And to everyone who has provided feedback on this project to make it what it is today, thank you!
-
-
-<a target='_blank' rel='nofollow' href='https://app.codesponsor.io/link/SXSxcXEh3FwrvhNp1rxuugLP/DouglasCAyers/sfdc-convert-notes-to-chatter-notes'>  <img alt='Sponsor' width='888' height='68' src='https://app.codesponsor.io/embed/SXSxcXEh3FwrvhNp1rxuugLP/DouglasCAyers/sfdc-convert-notes-to-chatter-notes.svg' /></a>
