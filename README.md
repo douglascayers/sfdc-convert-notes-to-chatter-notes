@@ -7,7 +7,7 @@ Overview
 In [Winter '16](https://releasenotes.docs.salesforce.com/en-us/winter16/release-notes/rn_mobile_salesforce1_otherfeat_notes_ga.htm) the new enhanced Notes tool became generally available,
 and with it introduced a new "Notes" related list separate from the classic "Notes & Attachments" related list.
 
-In [Spring '17](https://releasenotes.docs.salesforce.com/en-us/spring17/release-notes/rn_files_add_related_list_to_page_layouts.htm) Salesforce announced that in **Winter '18**
+In [Spring '17](https://releasenotes.docs.salesforce.com/en-us/spring17/release-notes/rn_files_add_related_list_to_page_layouts.htm) Salesforce announced that after **Winter '18**
 the "Notes & Attachments" related list will no longer have an upload or attach button. Customers will be required to migrate to and adopt Salesforce Files.
 Although this change is specific to Attachments/Files, it is very clear that "Notes & Attachments" related list will eventually be retired in favor of the new **Files** and **Notes** related lists.
 
