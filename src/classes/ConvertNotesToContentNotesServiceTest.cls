@@ -10,8 +10,6 @@ private class ConvertNotesToContentNotesServiceTest {
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
-        settings.Convert_Private_Notes__c = true;
-        settings.Share_Private_Notes__c = true;
 
         upsert settings;
 
@@ -140,8 +138,6 @@ private class ConvertNotesToContentNotesServiceTest {
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
         settings.Convert_in_Near_Real_Time__c = true;
         settings.Delete_Note_Once_Converted__c = false;
-        settings.Convert_Private_Notes__c = true;
-        settings.Share_Private_Notes__c = true;
 
         upsert settings;
 
@@ -209,8 +205,6 @@ private class ConvertNotesToContentNotesServiceTest {
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = false;
-        settings.Convert_Private_Notes__c = true;
-        settings.Share_Private_Notes__c = true;
 
         upsert settings;
 
@@ -295,8 +289,6 @@ private class ConvertNotesToContentNotesServiceTest {
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
-        settings.Convert_Private_Notes__c = true;
-        settings.Share_Private_Notes__c = true;
 
         upsert settings;
 
@@ -384,8 +376,6 @@ private class ConvertNotesToContentNotesServiceTest {
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
-        settings.Convert_Private_Notes__c = true;
-        settings.Share_Private_Notes__c = true;
 
         upsert settings;
 
@@ -435,7 +425,6 @@ private class ConvertNotesToContentNotesServiceTest {
         Test.startTest();
 
         ConvertNotesToContentNotesOptions options = new ConvertNotesToContentNotesOptions();
-        options.sharePrivateNotesWithParentRecord = true;
 
         ConvertNotesToContentNotesService service = new ConvertNotesToContentNotesService( options );
 
@@ -472,8 +461,6 @@ private class ConvertNotesToContentNotesServiceTest {
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = false;
-        settings.Convert_Private_Notes__c = true;
-        settings.Share_Private_Notes__c = true;
 
         upsert settings;
 
@@ -563,8 +550,6 @@ private class ConvertNotesToContentNotesServiceTest {
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
         settings.Convert_in_Near_Real_Time__c = true;
         settings.Delete_Note_Once_Converted__c = true;
-        settings.Convert_Private_Notes__c = true;
-        settings.Share_Private_Notes__c = true;
 
         upsert settings;
 
@@ -575,8 +560,6 @@ private class ConvertNotesToContentNotesServiceTest {
         Test.stopTest();
 
         System.assertEquals( settings.Delete_Note_Once_Converted__c, options.deleteNotesUponConversion );
-        System.assertEquals( settings.Convert_Private_Notes__c, options.convertPrivateNotes );
-        System.assertEquals( settings.Share_Private_Notes__c, options.sharePrivateNotesWithParentRecord );
 
     }
 
@@ -586,8 +569,6 @@ private class ConvertNotesToContentNotesServiceTest {
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = false;
-        settings.Convert_Private_Notes__c = false;
-        settings.Share_Private_Notes__c = false;
 
         upsert settings;
 

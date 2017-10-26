@@ -77,21 +77,6 @@ public without sharing class ConvertNotesToContentNotesService {
 
             }
 
-            // skip if we're not converting private notes
-            if ( oldNote.IsPrivate && !this.options.convertPrivateNotes ) {
-
-                ConversionResult conversionResult = new ConversionResult();
-                conversionResult.status = ConversionResultStatus.SKIPPED;
-                conversionResult.oldNote = oldNote;
-                conversionResult.contentNoteId = null;
-                conversionResult.message = 'Conversion Settings are set to not convert private notes.';
-
-                conversionResultsMap.put( oldNote.id, conversionResult );
-
-                continue;
-
-            }
-
             // per Salesforce we must escape certain special characters
             // logic inspired by David Reed (http://www.ktema.org//2016/08/24/importing-notes-into-salesforce/)
             // https://help.salesforce.com/apex/HTViewSolution?id=000230867&language=en_US
