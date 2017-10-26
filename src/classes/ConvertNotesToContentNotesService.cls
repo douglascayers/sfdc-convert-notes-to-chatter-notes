@@ -80,7 +80,7 @@ public without sharing class ConvertNotesToContentNotesService {
             // per Salesforce we must escape certain special characters
             // logic inspired by David Reed (http://www.ktema.org//2016/08/24/importing-notes-into-salesforce/)
             // https://help.salesforce.com/apex/HTViewSolution?id=000230867&language=en_US
-            String noteBody = ( String.isBlank( oldNote.body ) ? '<p></p>' : oldNote.body )
+            String noteBody = ( String.isBlank( oldNote.body ) ? '' : oldNote.body )
                 // the escape entity for '&' is '&amp;'
                 // so it includes '&' in its own escape sequence, which is a problem
                 // because escapeXml() changes '&' to '&amp;' as well
