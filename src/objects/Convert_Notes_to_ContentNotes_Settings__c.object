@@ -7,10 +7,10 @@
         <fullName>Convert_Private_Notes__c</fullName>
         <defaultValue>false</defaultValue>
         <deprecated>false</deprecated>
-        <description>Notes have &apos;IsPrivate&apos; field that limits access to owner and admins. ContentNotes related to records are not private. Enable this option to convert private notes to enhanced notes. Please consider your company&apos;s regulatory and security policies before enabling this option as it may expose data to new audiences.</description>
+        <description>Deprecated since version 1.3. Do not use.</description>
         <externalId>false</externalId>
-        <inlineHelpText>Notes have &apos;IsPrivate&apos; field that limits access to owner and admins. ContentNotes related to records are not private. Please consider your company&apos;s regulatory and security policies before enabling this option as it may expose data to new audiences.</inlineHelpText>
-        <label>Convert Private Notes?</label>
+        <inlineHelpText>Deprecated since version 1.3. Do not use.</inlineHelpText>
+        <label>Convert Private Notes? (deprecated)</label>
         <trackTrending>false</trackTrending>
         <type>Checkbox</type>
     </fields>
@@ -40,10 +40,10 @@
         <fullName>Share_Private_Notes__c</fullName>
         <defaultValue>false</defaultValue>
         <deprecated>false</deprecated>
-        <description>Notes have &apos;IsPrivate&apos; field that limits access to owner and admins. ContentNotes related to records are not private. Enable this option to share converted private notes with their parent record and to anyone who has access to the parent record.</description>
+        <description>Deprecated since version 1.3. Do not use.</description>
         <externalId>false</externalId>
-        <inlineHelpText>Notes have &apos;IsPrivate&apos; field that limits access to owner and admins. ContentNotes related to records are not private. Enable this option to share converted private notes with their parent record and to anyone who has access to the parent record.</inlineHelpText>
-        <label>Share Private Notes?</label>
+        <inlineHelpText>Deprecated since version 1.3. Do not use.</inlineHelpText>
+        <label>Share Private Notes? (deprecated)</label>
         <trackTrending>false</trackTrending>
         <type>Checkbox</type>
     </fields>
@@ -51,16 +51,10 @@
         <fullName>Share_Type__c</fullName>
         <defaultValue>&quot;V&quot;</defaultValue>
         <deprecated>false</deprecated>
-        <description>The ContentDocumentLink.ShareType value to use for converted files.
-V = view only
-I = inferred by user&apos;s editability of related record
-C = collaborator, view/edit (not supported if related to standard objects)</description>
+        <description>Deprecated since version 1.2. Do not use.</description>
         <externalId>false</externalId>
-        <inlineHelpText>The ContentDocumentLink.ShareType value to use for converted files.
-V = view only
-I = inferred by user&apos;s editability of related record
-C = collaborator, view/edit (not supported if related to standard objects)</inlineHelpText>
-        <label>Share Type</label>
+        <inlineHelpText>Deprecated since version 1.2. Do not use.</inlineHelpText>
+        <label>Share Type (deprecated)</label>
         <length>255</length>
         <required>false</required>
         <trackTrending>false</trackTrending>
@@ -71,14 +65,10 @@ C = collaborator, view/edit (not supported if related to standard objects)</inli
         <fullName>Visibility__c</fullName>
         <defaultValue>&quot;InternalUsers&quot;</defaultValue>
         <deprecated>false</deprecated>
-        <description>The ContentDocumentLink.Visibility value to use for converted files. For any user with permission to view the file, this further controls which set of users can actually see it.
-&quot;InternalUsers&quot; = only internal users with permission to view file
-&quot;AllUsers&quot; = all users, including community users, with permission to view file</description>
+        <description>Deprecated since version 1.2. Do not use.</description>
         <externalId>false</externalId>
-        <inlineHelpText>The ContentDocumentLink.Visibility value to use for converted files.
-&quot;InternalUsers&quot; = only internal users with permission to view file
-&quot;AllUsers&quot; = all users, including community users, with permission to view file</inlineHelpText>
-        <label>Visibility</label>
+        <inlineHelpText>Deprecated since version 1.2. Do not use.</inlineHelpText>
+        <label>Visibility (deprecated)</label>
         <length>255</length>
         <required>false</required>
         <trackTrending>false</trackTrending>
