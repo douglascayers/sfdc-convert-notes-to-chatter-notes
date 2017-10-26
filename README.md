@@ -7,7 +7,7 @@ Overview
 In [Winter '16](https://releasenotes.docs.salesforce.com/en-us/winter16/release-notes/rn_mobile_salesforce1_otherfeat_notes_ga.htm) the new enhanced Notes tool became generally available,
 and with it introduced a new "Notes" related list separate from the classic "Notes & Attachments" related list.
 
-In [Spring '17](https://releasenotes.docs.salesforce.com/en-us/spring17/release-notes/rn_files_add_related_list_to_page_layouts.htm) Salesforce announced that in **Winter '18**
+In [Spring '17](https://releasenotes.docs.salesforce.com/en-us/spring17/release-notes/rn_files_add_related_list_to_page_layouts.htm) Salesforce announced that after **Winter '18**
 the "Notes & Attachments" related list will no longer have an upload or attach button. Customers will be required to migrate to and adopt Salesforce Files.
 Although this change is specific to Attachments/Files, it is very clear that "Notes & Attachments" related list will eventually be retired in favor of the new **Files** and **Notes** related lists.
 
@@ -23,6 +23,7 @@ The package includes visualforce pages that let you:
 * Enable near real-time or scheduled conversions
 
 Additional Background:
+* [Adopting Files and Enhanced Notes](https://douglascayers.com/adopting-files-and-enhanced-notes-in-lightning-experience/)
 * [Setup Notes](https://help.salesforce.com/articleView?id=notes_admin_setup.htm)
 * [Considerations for Enabling Enhanced Notes](https://help.salesforce.com/articleView?id=000230837&type=1&language=en_US)
 * [ContentNote Documentation](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_contentnote.htm)
@@ -51,11 +52,16 @@ Pre-Requisites
 Packaged Release History
 ------------------------
 
-Release 1.2 (current)
+Release 1.3 (current)
 -----------
 * Install package
-  * [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tf40000019WZq)
-  * [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tf40000019WZq)
+  * [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=)
+  * [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=)
+* New with Winter '18, **private** notes are converted and shared to parent record using new [File Privacy on Records](https://releasenotes.docs.salesforce.com/en-us/winter18/release-notes/rn_files_on_records.htm) field. [(Issue 21)](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/21)
+* Fixes issue where empty classic note body appears as `<p></p>` in converted enhanced note. [(Issue 19)](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/19)
+
+Release 1.2
+-----------
 * Improved special character handling, partially resolves [Salesforce System Error](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/14) and [Try to decipher System Error Codes](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/11).
 * Preserves `LastModifiedDate` from original note.
 
@@ -187,7 +193,11 @@ You may want to consider changing ownership of those notes to actual user record
 
 How are private notes converted?
 --------------------------------
-Classic Notes & Attachments have an [IsPrivate](https://help.salesforce.com/apex/HTViewHelpDoc?id=notes_fields.htm) checkbox field that when selected
+Starting with Release 1.3 of the app, private notes are converted to enhanced notes and related to the parent record as you would expect
+and the enhanced note's privacy is preserved by using [Winter '18 feature **File Privacy on Records"](https://releasenotes.docs.salesforce.com/en-us/winter18/release-notes/rn_files_on_records.htm).
+
+Prior to Release 1.3, private notes were handled differently:
+> Classic Notes & Attachments have an [IsPrivate](https://help.salesforce.com/apex/HTViewHelpDoc?id=notes_fields.htm) checkbox field that when selected
 makes the record only visible to the owner and administrators, even through the
 Note or Attachment is related to the parent entity (e.g. Account or Contact).
 However, ContentNote object follows a different approach. Rather than an
@@ -198,14 +208,14 @@ The caveat then is that these unshared (private) enhanced notes do not show up
 contextually on any Salesforce record. By sharing the new enhanced note with the
 original parent record then any user who has visibility to that parent record now
 has access to this previously private note.
-
-Therefore, when converting you have the option to:
-
-(a) ignore private notes and not convert them
-
-(b) convert and share them with the parent entity
-
-(c) convert them but don't share them with the parent entity, they will reside in the note owner's private library
+>
+> Therefore, when converting you have the option to:
+>
+> (a) ignore private notes and not convert them
+>
+> (b) convert and share them with the parent entity
+>
+> (c) convert them but don't share them with the parent entity, they will reside in the note owner's private library
 
 
 Inactive Owners
@@ -251,6 +261,3 @@ Special Thanks
 * [Rick MacGuigan](https://www.linkedin.com/in/rick-macguigan-4406592b/), a very helpful early adopter and tester!
 * [David Reed](https://github.com/davidmreed/DMRNoteAttachmentImporter), for insight how to [escape](https://help.salesforce.com/articleView?id=000230867&type=1&language=en_US) HTML tags in original note content
 * And to everyone who has provided feedback on this project to make it what it is today, thank you!
-
-
-<a target='_blank' rel='nofollow' href='https://app.codesponsor.io/link/SXSxcXEh3FwrvhNp1rxuugLP/DouglasCAyers/sfdc-convert-notes-to-chatter-notes'>  <img alt='Sponsor' width='888' height='68' src='https://app.codesponsor.io/embed/SXSxcXEh3FwrvhNp1rxuugLP/DouglasCAyers/sfdc-convert-notes-to-chatter-notes.svg' /></a>
