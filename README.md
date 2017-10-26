@@ -55,8 +55,8 @@ Packaged Release History
 Release 1.3 (current)
 -----------
 * Install package
-  * [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=)
-  * [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=)
+  * [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tf4000001URw0)
+  * [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tf4000001URw0)
 * New with Winter '18, **private** notes are converted and shared to parent record using new [File Privacy on Records](https://releasenotes.docs.salesforce.com/en-us/winter18/release-notes/rn_files_on_records.htm) field. [(Issue 21)](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/21)
 * Fixes issue where empty classic note body appears as `<p></p>` in converted enhanced note. [(Issue 19)](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/19)
 
