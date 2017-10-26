@@ -91,5 +91,5 @@
         <members>Convert_Notes_to_ContentNotes</members>
         <name>PermissionSet</name>
     </types>
-    <version>40.0</version>
+    <version>41.0</version>
 </Package>

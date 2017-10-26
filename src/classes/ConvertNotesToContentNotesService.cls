@@ -77,25 +77,10 @@ public without sharing class ConvertNotesToContentNotesService {
 
             }
 
-            // skip if we're not converting private notes
-            if ( oldNote.IsPrivate && !this.options.convertPrivateNotes ) {
-
-                ConversionResult conversionResult = new ConversionResult();
-                conversionResult.status = ConversionResultStatus.SKIPPED;
-                conversionResult.oldNote = oldNote;
-                conversionResult.contentNoteId = null;
-                conversionResult.message = 'Conversion Settings are set to not convert private notes.';
-
-                conversionResultsMap.put( oldNote.id, conversionResult );
-
-                continue;
-
-            }
-
             // per Salesforce we must escape certain special characters
             // logic inspired by David Reed (http://www.ktema.org//2016/08/24/importing-notes-into-salesforce/)
             // https://help.salesforce.com/apex/HTViewSolution?id=000230867&language=en_US
-            String noteBody = ( String.isBlank( oldNote.body ) ? '<p></p>' : oldNote.body )
+            String noteBody = ( String.isBlank( oldNote.body ) ? '' : oldNote.body )
                 // the escape entity for '&' is '&amp;'
                 // so it includes '&' in its own escape sequence, which is a problem
                 // because escapeXml() changes '&' to '&amp;' as well
@@ -140,6 +125,8 @@ public without sharing class ConvertNotesToContentNotesService {
                 title = oldNote.title,
                 versionData = Blob.valueOf( noteBody ),
                 pathOnClient = oldNote.title + '.snote',
+                firstPublishLocationId = oldNote.parentId,
+                sharingPrivacy = ( oldNote.isPrivate ? 'P' : 'N' ),
                 // custom fields for history tracking and conversion purposes
                 original_record_id__c = oldNote.id,
                 original_record_parent_id__c = oldNote.parentId,
@@ -151,10 +138,6 @@ public without sharing class ConvertNotesToContentNotesService {
                 lastModifiedById = oldNote.lastModifiedById,
                 lastModifiedDate = oldNote.lastModifiedDate
             );
-
-            if ( !oldNote.isPrivate || ( oldNote.isPrivate && this.options.sharePrivateNotesWithParentRecord ) ) {
-                newNoteVersion.firstPublishLocationId = oldNote.parentId;
-            }
 
             // if communities are enabled then assign network id
             if ( communitiesEnabled ) {

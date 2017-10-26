@@ -10,8 +10,6 @@ private class ConvertNotesToContentNotesServiceTest {
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
-        settings.Convert_Private_Notes__c = true;
-        settings.Share_Private_Notes__c = true;
 
         upsert settings;
 
@@ -140,8 +138,6 @@ private class ConvertNotesToContentNotesServiceTest {
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
         settings.Convert_in_Near_Real_Time__c = true;
         settings.Delete_Note_Once_Converted__c = false;
-        settings.Convert_Private_Notes__c = true;
-        settings.Share_Private_Notes__c = true;
 
         upsert settings;
 
@@ -183,8 +179,9 @@ private class ConvertNotesToContentNotesServiceTest {
 
         System.runAs( user1 ) {
 
-            ContentVersion cv = [ SELECT id, contentDocumentId FROM ContentVersion WHERE original_record_id__c = :note.id AND isLatest = true ];
+            ContentVersion cv = [ SELECT id, contentDocumentId, sharingPrivacy FROM ContentVersion WHERE original_record_id__c = :note.id AND isLatest = true ];
             System.assert( cv != null );
+            System.assertEquals( 'N', cv.sharingPrivacy );
 
             ContentDocumentLink cdl = [ SELECT id, linkedEntityId FROM ContentDocumentLink WHERE contentDocumentId = :cv.contentDocumentId AND linkedEntityId = :account.id ];
             System.assert( cdl != null );
@@ -194,6 +191,9 @@ private class ConvertNotesToContentNotesServiceTest {
 
             List<Note> notes = new List<Note>([ SELECT id FROM Note WHERE id = :note.id ]);
             System.assertEquals( 1, notes.size() );
+
+            UserRecordAccess user2access = [ SELECT recordId, hasReadAccess FROM UserRecordAccess WHERE userId = :user2.id AND recordId = :cv.id ];
+            System.assertEquals( true, user2access.hasReadAccess, 'not note owner should see not private note' );
 
         }
 
@@ -205,8 +205,6 @@ private class ConvertNotesToContentNotesServiceTest {
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = false;
-        settings.Convert_Private_Notes__c = true;
-        settings.Share_Private_Notes__c = true;
 
         upsert settings;
 
@@ -291,8 +289,6 @@ private class ConvertNotesToContentNotesServiceTest {
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
-        settings.Convert_Private_Notes__c = true;
-        settings.Share_Private_Notes__c = true;
 
         upsert settings;
 
@@ -375,13 +371,11 @@ private class ConvertNotesToContentNotesServiceTest {
     }
 
     @isTest
-    static void test_no_share_private_notes_with_parent_record() {
+    static void test_share_private_notes_with_parent_record() {
 
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = true;
-        settings.Convert_Private_Notes__c = true;
-        settings.Share_Private_Notes__c = false;
 
         upsert settings;
 
@@ -431,91 +425,6 @@ private class ConvertNotesToContentNotesServiceTest {
         Test.startTest();
 
         ConvertNotesToContentNotesOptions options = new ConvertNotesToContentNotesOptions();
-        options.sharePrivateNotesWithParentRecord = false;
-
-        ConvertNotesToContentNotesService service = new ConvertNotesToContentNotesService( options );
-
-        List<ConvertNotesToContentNotesService.ConversionResult> results = service.convert( new Note[]{ note } );
-
-        Test.stopTest();
-
-        System.assertNotEquals( null, results );
-
-        for ( ConvertNotesToContentNotesService.ConversionResult result : results ) {
-            System.debug( result );
-            System.assertEquals( ConvertNotesToContentNotesService.ConversionResultStatus.CONVERTED, result.status, result.message );
-        }
-
-        System.runAs( user1 ) {
-
-            ContentVersion cv = [ SELECT id, contentDocumentId FROM ContentVersion WHERE original_record_id__c = :note.id AND isLatest = true ];
-            System.assert( cv != null );
-
-            List<ContentDocumentLink> cdl = [ SELECT id, linkedEntityId FROM ContentDocumentLink WHERE contentDocumentId = :cv.contentDocumentId AND linkedEntityId = :account.id ];
-            System.assertEquals( 0, cdl.size() );
-
-        }
-
-    }
-
-    @isTest
-    static void test_yes_share_private_notes_with_parent_record() {
-
-        Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
-        settings.Convert_in_Near_Real_Time__c = false;
-        settings.Delete_Note_Once_Converted__c = true;
-        settings.Convert_Private_Notes__c = true;
-        settings.Share_Private_Notes__c = true;
-
-        upsert settings;
-
-        UserRole role = [ SELECT id FROM UserRole WHERE parentRoleId = null AND portalType = 'None' LIMIT 1 ];
-
-        Profile p = [ SELECT id FROM Profile WHERE name = 'Standard User' ];
-
-        User user1, user2;
-
-        // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_testing_tools_runas.htm
-        System.runAs( new User( id = UserInfo.getUserId() ) ) {
-
-            user1 = ConvertNotesToContentNotesTestFactory.newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
-            user2 = ConvertNotesToContentNotesTestFactory.newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
-
-            insert new List<User>{ user1, user2 };
-
-        }
-
-        Account account = new Account(
-            ownerId = user1.id,
-            name = 'Test Account'
-        );
-
-        insert account;
-
-        Note note = new Note(
-            title = 'Hello World.txt',
-            body = 'Goodnight Moon',
-            parentId = account.id,
-            ownerId = user1.id,
-            isPrivate = true
-        );
-
-        insert note;
-
-        note = [
-            SELECT
-                id, parentId, ownerId, title, body, isPrivate,
-                createdById, createdDate, lastModifiedById, lastModifiedDate
-            FROM
-                Note
-            WHERE
-                id = :note.id
-        ];
-
-        Test.startTest();
-
-        ConvertNotesToContentNotesOptions options = new ConvertNotesToContentNotesOptions();
-        options.sharePrivateNotesWithParentRecord = true;
 
         ConvertNotesToContentNotesService service = new ConvertNotesToContentNotesService( options );
 
@@ -532,11 +441,15 @@ private class ConvertNotesToContentNotesServiceTest {
                 System.assertEquals( ConvertNotesToContentNotesService.ConversionResultStatus.CONVERTED, result.status, result.message );
             }
 
-            ContentVersion cv = [ SELECT id, contentDocumentId FROM ContentVersion WHERE original_record_id__c = :note.id AND isLatest = true ];
+            ContentVersion cv = [ SELECT id, contentDocumentId, sharingPrivacy FROM ContentVersion WHERE original_record_id__c = :note.id AND isLatest = true ];
             System.assert( cv != null );
+            System.assertEquals( 'P', cv.sharingPrivacy );
 
             ContentDocumentLink cdl = [ SELECT id, linkedEntityId FROM ContentDocumentLink WHERE contentDocumentId = :cv.contentDocumentId AND linkedEntityId = :account.id ];
             System.assert( cdl != null );
+
+            UserRecordAccess user2access = [ SELECT recordId, hasReadAccess FROM UserRecordAccess WHERE userId = :user2.id AND recordId = :cv.id ];
+            System.assertEquals( false, user2access.hasReadAccess, 'not note owner should not see private note' );
 
         }
 
@@ -548,8 +461,6 @@ private class ConvertNotesToContentNotesServiceTest {
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
         settings.Convert_in_Near_Real_Time__c = false;
         settings.Delete_Note_Once_Converted__c = false;
-        settings.Convert_Private_Notes__c = true;
-        settings.Share_Private_Notes__c = true;
 
         upsert settings;
 
@@ -639,8 +550,6 @@ private class ConvertNotesToContentNotesServiceTest {
         Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
         settings.Convert_in_Near_Real_Time__c = true;
         settings.Delete_Note_Once_Converted__c = true;
-        settings.Convert_Private_Notes__c = true;
-        settings.Share_Private_Notes__c = true;
 
         upsert settings;
 
@@ -651,126 +560,6 @@ private class ConvertNotesToContentNotesServiceTest {
         Test.stopTest();
 
         System.assertEquals( settings.Delete_Note_Once_Converted__c, options.deleteNotesUponConversion );
-        System.assertEquals( settings.Convert_Private_Notes__c, options.convertPrivateNotes );
-        System.assertEquals( settings.Share_Private_Notes__c, options.sharePrivateNotesWithParentRecord );
-
-    }
-
-    @isTest
-    static void test_not_share_private_notes() {
-
-        Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
-        settings.Convert_in_Near_Real_Time__c = false;
-        settings.Delete_Note_Once_Converted__c = false;
-        settings.Convert_Private_Notes__c = false;
-        settings.Share_Private_Notes__c = false;
-
-        upsert settings;
-
-        PermissionSet permset = [ SELECT id FROM PermissionSet WHERE name = 'Convert_Notes_to_ContentNotes' LIMIT 1 ];
-
-        UserRole role = [ SELECT id FROM UserRole WHERE parentRoleId = null AND portalType = 'None' LIMIT 1 ];
-
-        Profile p = [ SELECT id FROM Profile WHERE name = 'Standard User' ];
-
-        User user1, user2;
-
-        // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_testing_tools_runas.htm
-        System.runAs( new User( id = UserInfo.getUserId() ) ) {
-
-            user1 = ConvertNotesToContentNotesTestFactory.newUser( p.id, role.id, 'Alpha', 'User 1', 'user_1@example.com' );
-            user2 = ConvertNotesToContentNotesTestFactory.newUser( p.id, role.id, 'Beta',  'User 2', 'user_2@example.com' );
-
-            insert new List<User>{ user1, user2 };
-
-            PermissionSetAssignment psa = new PermissionSetAssignment(
-                assigneeId = user1.id,
-                permissionSetId = permset.id
-            );
-
-            insert psa;
-
-        }
-
-        Account acct = new Account(
-            ownerId = user1.id,
-            name = 'Community Account'
-        );
-
-        insert acct;
-
-        Contact cont = new Contact(
-            accountId = acct.id,
-            firstName = 'Beta',
-            lastName = 'User 2'
-        );
-
-        insert cont;
-
-        System.runAs( user1 ) {
-
-            Note note1 = new Note(
-                title = 'Hello World 1.txt',
-                body = 'Goodnight Moon',
-                parentId = acct.id,
-                ownerId = user1.id,
-                isPrivate = true
-            );
-
-            insert note1;
-
-        }
-
-        System.runAs( user2 ) {
-
-            Note note2 = new Note(
-                title = 'Hello World 2.txt',
-                body = 'Goodnight Moon 2',
-                parentId = acct.id,
-                ownerId = user2.id,
-                isPrivate = true
-            );
-
-            insert note2;
-
-        }
-
-        Test.startTest();
-
-        System.runAs( user1 ) {
-
-            List<Note> notes = [
-                SELECT
-                    id, parentId, ownerId, title, body, isPrivate,
-                    createdById, createdDate, lastModifiedById, lastModifiedDate
-                FROM
-                    Note
-            ];
-
-            System.assertEquals( 1, notes.size(), 'should only see their own private notes' );
-
-            ConvertNotesToContentNotesService service = new ConvertNotesToContentNotesService();
-
-            // we should get back no ids since the notes haven't been converted yet
-            Map<ID, ID> convertedNoteIdsMap = service.getAlreadyConvertedNoteIdsMap( notes );
-            System.assertEquals( 0, convertedNoteIdsMap.size() );
-
-            List<ConvertNotesToContentNotesService.ConversionResult> results = service.convert( notes );
-
-            System.assertEquals( notes.size(), results.size() );
-
-            for ( ConvertNotesToContentNotesService.ConversionResult result : results ) {
-                System.debug( result );
-                System.assertEquals( ConvertNotesToContentNotesService.ConversionResultStatus.SKIPPED, result.status, result.message );
-            }
-
-        }
-
-        Test.stopTest();
-
-        Set<ID> entityIds = new Set<ID>{ acct.id, cont.id };
-
-        System.assertEquals( 0, [ SELECT count() FROM ContentDocumentLink WHERE linkedEntityId IN :entityIds ] );
 
     }
 
