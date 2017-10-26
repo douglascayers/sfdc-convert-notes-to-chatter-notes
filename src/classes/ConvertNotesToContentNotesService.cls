@@ -140,6 +140,8 @@ public without sharing class ConvertNotesToContentNotesService {
                 title = oldNote.title,
                 versionData = Blob.valueOf( noteBody ),
                 pathOnClient = oldNote.title + '.snote',
+                firstPublishLocationId = oldNote.parentId,
+                sharingPrivacy = ( oldNote.isPrivate ? 'P' : 'N' ),
                 // custom fields for history tracking and conversion purposes
                 original_record_id__c = oldNote.id,
                 original_record_parent_id__c = oldNote.parentId,
@@ -151,10 +153,6 @@ public without sharing class ConvertNotesToContentNotesService {
                 lastModifiedById = oldNote.lastModifiedById,
                 lastModifiedDate = oldNote.lastModifiedDate
             );
-
-            if ( !oldNote.isPrivate || ( oldNote.isPrivate && this.options.sharePrivateNotesWithParentRecord ) ) {
-                newNoteVersion.firstPublishLocationId = oldNote.parentId;
-            }
 
             // if communities are enabled then assign network id
             if ( communitiesEnabled ) {
