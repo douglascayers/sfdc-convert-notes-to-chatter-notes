@@ -6,6 +6,7 @@
     <fields>
         <fullName>Convert_Private_Notes__c</fullName>
         <defaultValue>false</defaultValue>
+        <deprecated>false</deprecated>
         <description>Notes have &apos;IsPrivate&apos; field that limits access to owner and admins. ContentNotes related to records are not private. Enable this option to convert private notes to enhanced notes. Please consider your company&apos;s regulatory and security policies before enabling this option as it may expose data to new audiences.</description>
         <externalId>false</externalId>
         <inlineHelpText>Notes have &apos;IsPrivate&apos; field that limits access to owner and admins. ContentNotes related to records are not private. Please consider your company&apos;s regulatory and security policies before enabling this option as it may expose data to new audiences.</inlineHelpText>
@@ -16,6 +17,7 @@
     <fields>
         <fullName>Convert_in_Near_Real_Time__c</fullName>
         <defaultValue>false</defaultValue>
+        <deprecated>false</deprecated>
         <description>Enables &apos;after insert&apos; trigger on Note that enqueues job to convert into ContentNotes in near real-time. This async conversion does not slow down save transaction, and if &apos;Delete Notes&apos; option is enabled then deletes in separate transaction too.</description>
         <externalId>false</externalId>
         <inlineHelpText>Enables &apos;after insert&apos; trigger on Note that enqueues job to convert into ContentNotes in near real-time. This async conversion does not slow down save transaction, and if &apos;Delete Notes&apos; option is enabled then deletes in separate transaction too.</inlineHelpText>
@@ -26,6 +28,7 @@
     <fields>
         <fullName>Delete_Note_Once_Converted__c</fullName>
         <defaultValue>false</defaultValue>
+        <deprecated>false</deprecated>
         <description>When checked then conversion process will delete the original Note once successfully converted to ContentNote. You may want to delete them to save storage space in your org.</description>
         <externalId>false</externalId>
         <inlineHelpText>When checked then conversion process will delete the original Note once successfully converted to ContentNote. You may want to delete them to save storage space in your org.</inlineHelpText>
@@ -36,6 +39,7 @@
     <fields>
         <fullName>Share_Private_Notes__c</fullName>
         <defaultValue>false</defaultValue>
+        <deprecated>false</deprecated>
         <description>Notes have &apos;IsPrivate&apos; field that limits access to owner and admins. ContentNotes related to records are not private. Enable this option to share converted private notes with their parent record and to anyone who has access to the parent record.</description>
         <externalId>false</externalId>
         <inlineHelpText>Notes have &apos;IsPrivate&apos; field that limits access to owner and admins. ContentNotes related to records are not private. Enable this option to share converted private notes with their parent record and to anyone who has access to the parent record.</inlineHelpText>
@@ -46,6 +50,7 @@
     <fields>
         <fullName>Share_Type__c</fullName>
         <defaultValue>&quot;V&quot;</defaultValue>
+        <deprecated>false</deprecated>
         <description>The ContentDocumentLink.ShareType value to use for converted files.
 V = view only
 I = inferred by user&apos;s editability of related record
@@ -65,6 +70,7 @@ C = collaborator, view/edit (not supported if related to standard objects)</inli
     <fields>
         <fullName>Visibility__c</fullName>
         <defaultValue>&quot;InternalUsers&quot;</defaultValue>
+        <deprecated>false</deprecated>
         <description>The ContentDocumentLink.Visibility value to use for converted files. For any user with permission to view the file, this further controls which set of users can actually see it.
 &quot;InternalUsers&quot; = only internal users with permission to view file
 &quot;AllUsers&quot; = all users, including community users, with permission to view file</description>
