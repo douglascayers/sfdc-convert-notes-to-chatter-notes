@@ -52,11 +52,17 @@ Pre-Requisites
 Packaged Release History
 ------------------------
 
-Release 1.3 (current)
------------
+Release 1.4 (current)
+-------------
 * Install package
-  * [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tf4000001URw0)
-  * [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tf4000001URw0)
+  * [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tf4000001URw5)
+  * [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tf4000001URw5)
+* Adds support for "Guest Site" users creating notes when the near real-time trigger option is enabled.
+* Adds option to specify "Max Records to Convert" for customers who have more notes to convert than the daily allowed Content Publication Limit. This allows those admins to better plan multi-day conversions. [(Issue 1)](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/1)
+* Updated all code to API v41.0 (Winter '18)
+
+Release 1.3
+-----------
 * New with Winter '18, **private** notes are converted and shared to parent record using new [File Privacy on Records](https://releasenotes.docs.salesforce.com/en-us/winter18/release-notes/rn_files_on_records.htm) field. [(Issue 21)](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/21)
 * Fixes issue where empty classic note body appears as `<p></p>` in converted enhanced note. [(Issue 19)](https://github.com/DouglasCAyers/sfdc-convert-notes-to-chatter-notes/issues/19)
 

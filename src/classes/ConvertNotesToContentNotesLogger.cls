@@ -1,7 +1,7 @@
 /**
  * Developed by Doug Ayers (douglascayers.com)
  */
-public with sharing class ConvertNotesToContentNotesLogger {
+public without sharing class ConvertNotesToContentNotesLogger {
 
     /**
      * Designed to be called once when exception is caught

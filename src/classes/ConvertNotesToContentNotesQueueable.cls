@@ -5,8 +5,15 @@
  * need exactly one batch of records (up to 200 records) to be converted to ContentNotes.
  *
  * Actual conversion for the execution is delegated to ConvertNotesToContentNotesService.
+ *
+ * We specify 'without sharing' so that when 'Public Site Guest' users on Force.com Sites
+ * create a Note and the Trigger "auto converts" to Enhanced Note by enqueueing this class
+ * then the notes query in this class will actually find results.
+ * When we specify 'with sharing' then since the 'Public Site Guest' user may not actually
+ * have record level access to the parent entity and thus the note then no records come back
+ * and downstream conversion fails.
  */
-    global with sharing class ConvertNotesToContentNotesQueueable implements System.Queueable {
+global without sharing class ConvertNotesToContentNotesQueueable implements System.Queueable {
 
     @TestVisible
     private List<ConvertNotesToContentNotesService.ConversionResult> mockResults { get; set; }

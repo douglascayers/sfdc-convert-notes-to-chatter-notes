@@ -453,4 +453,74 @@ private class ConvertNotesToContentNotesBatchableTest {
 
     }
 
+    @isTest
+    static void test_max_records_to_convert() {
+
+        Convert_Notes_to_ContentNotes_Settings__c settings = Convert_Notes_to_ContentNotes_Settings__c.getOrgDefaults();
+        settings.Convert_in_Near_Real_Time__c = false;
+        settings.Delete_Note_Once_Converted__c = true;
+
+        upsert settings;
+
+        Profile p = [ SELECT id FROM Profile WHERE name = 'Standard User' ];
+
+        User user1, user2;
+
+        // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_testing_tools_runas.htm
+        System.runAs( new User( id = UserInfo.getUserId() ) ) {
+
+            user1 = ConvertNotesToContentNotesTestFactory.newUser( p.id, 'Alpha', 'User 1', 'user_1@example.com' );
+            user2 = ConvertNotesToContentNotesTestFactory.newUser( p.id, 'Beta',  'User 2', 'user_2@example.com' );
+
+            insert new List<User>{ user1, user2 };
+
+        }
+
+        Account acct = new Account(
+            ownerId = user1.id,
+            name = 'Test Account'
+        );
+
+        insert acct;
+
+        Note note1 = new Note(
+            title = 'Hello World 1',
+            body = 'Hello World 1',
+            parentId = acct.id,
+            ownerid = user1.id
+        );
+
+        insert note1;
+
+        Note note2 = new Note(
+            title = 'Hello World 2',
+            body = 'Hello World 2',
+            parentId = acct.id,
+            ownerId = user2.id
+        );
+
+        insert note2;
+
+        Test.startTest();
+
+        ConvertNotesToContentNotesOptions options = new ConvertNotesToContentNotesOptions();
+        options.maxRecordsToConvert = 1;
+
+        ConvertNotesToContentNotesBatchable batchable = new ConvertNotesToContentNotesBatchable( options );
+        batchable.conversionCount = options.maxRecordsToConvert;
+
+        ID jobId = Database.executeBatch( batchable, 100 );
+
+        Test.stopTest();
+
+        for ( Convert_Notes_to_ContentNotes_Log__c log : [ SELECT Status__c, Old_Note_ID__c, New_Note_ID__c, Summary__c, Detail__c FROM Convert_Notes_to_ContentNotes_Log__c ] ) {
+            System.debug( log );
+        }
+
+        System.assertEquals( 1, [ SELECT count() FROM AsyncApexJob WHERE id = :jobId AND Status = 'Aborted' ], 'should have aborted job for reaching limit' );
+        System.assertEquals( 2, [ SELECT count() FROM Note ], 'should not have deleted notes' );
+        System.assertEquals( 0, [ SELECT count() FROM ContentDocumentLink WHERE LinkedEntityId = :acct.id ], 'should not have converted notes' );
+
+    }
+
 }
