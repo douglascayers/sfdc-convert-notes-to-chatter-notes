@@ -19,6 +19,9 @@ global without sharing class ConvertNotesToContentNotesBatchable implements Data
     @TestVisible
     private ConvertNotesToContentNotesOptions options { get; set; }
 
+    @TestVisible
+    private Integer conversionCount { get; set; } // the number of notes converted by this batchable
+
     global ConvertNotesToContentNotesBatchable() {
         this( new ConvertNotesToContentNotesOptions() );
     }
@@ -26,6 +29,7 @@ global without sharing class ConvertNotesToContentNotesBatchable implements Data
     // not exposed to subscriber orgs, want users to configure the custom setting
     public ConvertNotesToContentNotesBatchable( ConvertNotesToContentNotesOptions options ) {
         this.options = options;
+        this.conversionCount = 0;
     }
 
     // ----------------------------------------------------------
@@ -67,6 +71,12 @@ global without sharing class ConvertNotesToContentNotesBatchable implements Data
 
     public void execute( Database.BatchableContext context, List<Note> notes ) {
 
+        if ( this.conversionCount >= this.options.maxRecordsToConvert ) {
+            System.debug( 'Reached max records to convert; aborting job: ' + context );
+            System.abortJob( context.getJobId() );
+            return;
+        }
+
         SavePoint sp = Database.setSavePoint();
 
         try {
@@ -91,6 +101,12 @@ global without sharing class ConvertNotesToContentNotesBatchable implements Data
             }
 
             ConvertNotesToContentNotesLogger.log( context.getJobId(), results );
+
+            for ( ConvertNotesToContentNotesService.ConversionResult result : results ) {
+                if ( result.status == ConvertNotesToContentNotesService.ConversionResultStatus.CONVERTED ) {
+                    this.conversionCount++;
+                }
+            }
 
         } catch ( Exception e ) {
 
