@@ -76,12 +76,10 @@
                                                   layout="pageDirection">
 
                                     <apex:selectOption itemLabel="Keep them; I have great plans for the notes..."
-                                        itemValue="false"
-                                    />
+                                                       itemValue="false"/>
 
                                     <apex:selectOption itemLabel="Delete them; I have backups and I need the data storage back!"
-                                        itemValue="true"
-                                    />
+                                                       itemValue="true"/>
 
                                 </apex:selectRadio>
 
